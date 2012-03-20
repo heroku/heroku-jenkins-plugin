@@ -24,7 +24,7 @@
         We'll have on input field. The 'descriptor' variable represents our descriptor
         object, so we use that to determine the initial value for this form.
       -->
-      <f:textbox name="herokuHost" />
+      <f:textbox name="herokuHost" value="${descriptor.getHerokuHost()}"/>
     </f:entry>
 
     <f:entry title="API Key"
@@ -34,7 +34,7 @@
         We'll have on input field. The 'descriptor' variable represents our descriptor
         object, so we use that to determine the initial value for this form.
       -->
-      <f:textbox name="apiKey" />
+      <f:textbox name="apiKey" value="${descriptor.getApiKey()}" />
     </f:entry>
   </f:section>
 </j:jelly>
