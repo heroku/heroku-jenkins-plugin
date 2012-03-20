@@ -19,7 +19,7 @@ import org.kohsuke.stapler.StaplerRequest;
  * {@link DescriptorImpl#newInstance(StaplerRequest)} is invoked
  * and a new {@link HerokuDeployer} is created. The created
  * instance is persisted to the project configuration XML by using
- * XStream, so this allows you to use instance fields (like {@link #name})
+ * XStream, so this allows you to use instance fields (like {@link #artifactPath})
  * to remember the configuration.
  * <p/>
  * <p/>
@@ -30,19 +30,19 @@ import org.kohsuke.stapler.StaplerRequest;
  */
 public class HerokuDeployer extends Builder {
 
-    private final String name;
+    private final String artifactPath;
 
     // Fields in config.jelly must match the parameter names in the "DataBoundConstructor"
     @DataBoundConstructor
-    public HerokuDeployer(String name) {
-        this.name = name;
+    public HerokuDeployer(String artifactPath) {
+        this.artifactPath = artifactPath;
     }
 
     /**
      * We'll use this from the <tt>config.jelly</tt>.
      */
-    public String getName() {
-        return name;
+    public String getArtifactPath() {
+        return artifactPath;
     }
 
     @Override
@@ -53,6 +53,7 @@ public class HerokuDeployer extends Builder {
         // This also shows how you can consult the global configuration of the builder
         listener.getLogger().println("HEROKU HOST:" + getDescriptor().getHerokuHost());
         listener.getLogger().println("API KEY: " + getDescriptor().getApiKey());
+        listener.getLogger().println("ARTIFACT PATH: " + artifactPath);
 
         return true;
     }
