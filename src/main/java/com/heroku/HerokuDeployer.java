@@ -74,16 +74,13 @@ public class HerokuDeployer extends Builder {
         return true;
     }
 
-    // Overridden for better type safety.
-    // If your plugin doesn't really define any property on Descriptor,
-    // you don't have to do this.
     @Override
-    public DescriptorImpl getDescriptor() {
-        return (DescriptorImpl) super.getDescriptor();
+    public HerokuDeployerDescriptor getDescriptor() {
+        return (HerokuDeployerDescriptor) super.getDescriptor();
     }
 
-    @Extension // This indicates to Jenkins that this is an implementation of an extension point.
-    public static final class DescriptorImpl extends BuildStepDescriptor<Builder> {
+    @Extension
+    public static final class HerokuDeployerDescriptor extends BuildStepDescriptor<Builder> {
 
         private String apiKey;
 
