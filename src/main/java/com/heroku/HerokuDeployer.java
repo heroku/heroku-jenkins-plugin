@@ -1,5 +1,10 @@
 package com.heroku;
 
+import com.heroku.api.App;
+import com.heroku.api.Heroku;
+import com.heroku.api.HerokuAPI;
+import com.heroku.api.exception.RequestFailedException;
+import com.herokuapp.warpath.WarPusher;
 import hudson.Extension;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
@@ -10,6 +15,9 @@ import hudson.tasks.Builder;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
+
+import java.io.File;
+import java.io.IOException;
 
 /**
  * Sample {@link Builder}.
@@ -53,14 +61,33 @@ public class HerokuDeployer extends Builder {
 
     @Override
     public boolean perform(AbstractBuild build, Launcher launcher, BuildListener listener) {
-        // This is where you 'build' the project.
-        // Since this is a dummy, we just say 'hello world' and call that a build.
+        final String apiKey = getDescriptor().getApiKey(); //TODO: error handle
+        final HerokuAPI api = new HerokuAPI(apiKey);
 
-        // This also shows how you can consult the global configuration of the builder
-        listener.getLogger().println("HEROKU HOST:" + getDescriptor().getHerokuHost());
-        listener.getLogger().println("API KEY: " + getDescriptor().getApiKey());
-        listener.getLogger().println("APP NAME: " + appName);
-        listener.getLogger().println("ARTIFACT PATH: " + artifactPath);
+        App app;
+        try {
+            app = api.getApp(appName);
+            listener.getLogger().println("Found existing app: " + appName);
+        } catch (RequestFailedException appListingException) {
+            try {
+                app = api.createApp(new App().named(appName).on(Heroku.Stack.Cedar));
+                listener.getLogger().println("Created new app: " + appName);
+            } catch (RuntimeException appCreationException) {
+                listener.error("Could not create app " + appName + "\n" +
+                        appCreationException.getMessage());
+                return false;
+            }
+        }
+
+        final WarPusher warPusher = new WarPusher(apiKey);
+        try {
+            listener.getLogger().println("Pushing " + artifactPath + " to " + app.getName() + "...");
+            warPusher.push(appName, new File(artifactPath));
+            listener.getLogger().println("Push successful: " + app.getWebUrl());
+        } catch (IOException e) {
+            listener.error(e.getMessage());
+            return false;
+        }
 
         return true;
     }

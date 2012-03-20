@@ -1,15 +1,21 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>plugin</artifactId>
-        <version>1.400</version><!-- which version of Jenkins is this plugin built against? -->
+        <version>1.400</version>
+        <!-- which version of Jenkins is this plugin built against? -->
     </parent>
 
     <groupId>com.heroku</groupId>
     <artifactId>heroku-jenkins</artifactId>
     <version>1.0-SNAPSHOT</version>
     <packaging>hpi</packaging>
+
+    <properties>
+        <com.heroku.api.version>0.5-SNAPSHOT</com.heroku.api.version>
+    </properties>
 
     <repositories>
         <repository>
@@ -23,4 +29,27 @@
             <url>http://repo.jenkins-ci.org/public/</url>
         </pluginRepository>
     </pluginRepositories>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.heroku.api</groupId>
+            <artifactId>heroku-api</artifactId>
+            <version>${com.heroku.api.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.heroku.api</groupId>
+            <artifactId>heroku-json-jackson</artifactId>
+            <version>${com.heroku.api.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.heroku.api</groupId>
+            <artifactId>heroku-http-apache</artifactId>
+            <version>${com.heroku.api.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>heroku-warpath-jar</groupId>
+            <artifactId>heroku-warpath-jar</artifactId>
+            <version>0.1-SNAPSHOT</version>
+        </dependency>
+    </dependencies>
 </project>
