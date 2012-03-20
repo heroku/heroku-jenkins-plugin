@@ -3,10 +3,6 @@
         <f:entry title="API Key"
                  description="API Key for Heroku User"
                  help="/plugin/heroku-jenkins/help-globalConfig.html">
-            <!--
-              We'll have on input field. The 'descriptor' variable represents our descriptor
-              object, so we use that to determine the initial value for this form.
-            -->
             <f:textbox name="apiKey" value="${descriptor.getApiKey()}"/>
         </f:entry>
     </f:section>
