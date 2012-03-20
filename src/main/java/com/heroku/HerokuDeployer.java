@@ -121,6 +121,10 @@ public class HerokuDeployer extends Builder {
         }
 
         public FormValidation doCheckArtifactPath(@AncestorInPath AbstractProject project, @QueryParameter String value) throws IOException {
+            if (value != null && !value.trim().endsWith(".war")) {
+                return FormValidation.error("Artifact must be a WAR file");
+            }
+
             return FilePath.validateFileMask(project.getSomeWorkspace(), value);
         }
     }
