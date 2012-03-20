@@ -9,7 +9,11 @@
       Creates a text field that shows the value of the "artifactPath" property.
       When submitted, it will be passed to the corresponding constructor parameter.
     -->
-    <f:entry title="Name" field="artifactPath">
+    <f:entry title="App Name" field="appName">
+        <f:textbox/>
+    </f:entry>
+
+    <f:entry title="Artifact Path" field="artifactPath">
         <f:textbox/>
     </f:entry>
 </j:jelly>

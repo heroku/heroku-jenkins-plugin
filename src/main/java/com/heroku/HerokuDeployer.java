@@ -30,12 +30,18 @@ import org.kohsuke.stapler.StaplerRequest;
  */
 public class HerokuDeployer extends Builder {
 
+    private final String appName;
     private final String artifactPath;
 
     // Fields in config.jelly must match the parameter names in the "DataBoundConstructor"
     @DataBoundConstructor
-    public HerokuDeployer(String artifactPath) {
+    public HerokuDeployer(String appName, String artifactPath) {
+        this.appName = appName;
         this.artifactPath = artifactPath;
+    }
+
+    public String getAppName() {
+        return appName;
     }
 
     /**
@@ -53,6 +59,7 @@ public class HerokuDeployer extends Builder {
         // This also shows how you can consult the global configuration of the builder
         listener.getLogger().println("HEROKU HOST:" + getDescriptor().getHerokuHost());
         listener.getLogger().println("API KEY: " + getDescriptor().getApiKey());
+        listener.getLogger().println("APP NAME: " + appName);
         listener.getLogger().println("ARTIFACT PATH: " + artifactPath);
 
         return true;
