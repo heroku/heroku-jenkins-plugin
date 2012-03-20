@@ -1,44 +1,40 @@
 package com.heroku;
-import hudson.Launcher;
+
 import hudson.Extension;
-import hudson.util.FormValidation;
+import hudson.Launcher;
 import hudson.model.AbstractBuild;
-import hudson.model.BuildListener;
 import hudson.model.AbstractProject;
-import hudson.tasks.Builder;
+import hudson.model.BuildListener;
 import hudson.tasks.BuildStepDescriptor;
+import hudson.tasks.Builder;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.QueryParameter;
-
-import javax.servlet.ServletException;
-import java.io.IOException;
 
 /**
  * Sample {@link Builder}.
- *
- * <p>
+ * <p/>
+ * <p/>
  * When the user configures the project and enables this builder,
  * {@link DescriptorImpl#newInstance(StaplerRequest)} is invoked
- * and a new {@link HelloWorldBuilder} is created. The created
+ * and a new {@link HerokuDeployer} is created. The created
  * instance is persisted to the project configuration XML by using
  * XStream, so this allows you to use instance fields (like {@link #name})
  * to remember the configuration.
- *
- * <p>
+ * <p/>
+ * <p/>
  * When a build is performed, the {@link #perform(AbstractBuild, Launcher, BuildListener)}
- * method will be invoked. 
+ * method will be invoked.
  *
  * @author Kohsuke Kawaguchi
  */
-public class HelloWorldBuilder extends Builder {
+public class HerokuDeployer extends Builder {
 
     private final String name;
 
     // Fields in config.jelly must match the parameter names in the "DataBoundConstructor"
     @DataBoundConstructor
-    public HelloWorldBuilder(String name) {
+    public HerokuDeployer(String name) {
         this.name = name;
     }
 
@@ -66,15 +62,15 @@ public class HelloWorldBuilder extends Builder {
     // you don't have to do this.
     @Override
     public DescriptorImpl getDescriptor() {
-        return (DescriptorImpl)super.getDescriptor();
+        return (DescriptorImpl) super.getDescriptor();
     }
 
     /**
-     * Descriptor for {@link HelloWorldBuilder}. Used as a singleton.
+     * Descriptor for {@link HerokuDeployer}. Used as a singleton.
      * The class is marked as public so that it can be accessed from views.
-     *
-     * <p>
-     * See <tt>src/main/resources/hudson/plugins/hello_world/HelloWorldBuilder/*.jelly</tt>
+     * <p/>
+     * <p/>
+     * See <tt>src/main/resources/hudson/plugins/hello_world/HerokuDeployer/*.jelly</tt>
      * for the actual HTML fragment for the configuration screen.
      */
     @Extension // This indicates to Jenkins that this is an implementation of an extension point.
@@ -82,8 +78,8 @@ public class HelloWorldBuilder extends Builder {
         /**
          * To persist global configuration information,
          * simply store it in a field and call save().
-         *
-         * <p>
+         * <p/>
+         * <p/>
          * If you don't want fields to be persisted, use <tt>transient</tt>.
          */
         private String herokuHost = "heroku.com";
@@ -107,7 +103,7 @@ public class HelloWorldBuilder extends Builder {
             apiKey = formData.getString("apiKey");
 
             save();
-            return super.configure(req,formData);
+            return super.configure(req, formData);
         }
 
         public String getApiKey() {
