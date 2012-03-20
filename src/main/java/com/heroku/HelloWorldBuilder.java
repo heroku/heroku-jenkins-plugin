@@ -55,10 +55,9 @@ public class HelloWorldBuilder extends Builder {
         // Since this is a dummy, we just say 'hello world' and call that a build.
 
         // This also shows how you can consult the global configuration of the builder
-        if (getDescriptor().useFrench())
-            listener.getLogger().println("Bonjour, "+name+"!");
-        else
-            listener.getLogger().println("Hello, "+name+"!");
+        listener.getLogger().println("HEROKU HOST:" + getDescriptor().getHerokuHost());
+        listener.getLogger().println("API KEY: " + getDescriptor().getApiKey());
+
         return true;
     }
 
@@ -87,7 +86,8 @@ public class HelloWorldBuilder extends Builder {
          * <p>
          * If you don't want fields to be persisted, use <tt>transient</tt>.
          */
-        private boolean useFrench;
+        private String herokuHost = "heroku.com";
+        private String apiKey;
 
         /**
          * Performs on-the-fly validation of the form field 'name'.
@@ -97,6 +97,7 @@ public class HelloWorldBuilder extends Builder {
          * @return
          *      Indicates the outcome of the validation. This is sent to the browser.
          */
+        //TODO: when is this used?
         public FormValidation doCheckName(@QueryParameter String value)
                 throws IOException, ServletException {
             if (value.length() == 0)
@@ -115,25 +116,24 @@ public class HelloWorldBuilder extends Builder {
          * This human readable name is used in the configuration screen.
          */
         public String getDisplayName() {
-            return "Say hello world";
+            return "Deploy to Heroku";
         }
 
         @Override
         public boolean configure(StaplerRequest req, JSONObject formData) throws FormException {
-            // To persist global configuration information,
-            // set that to properties and call save().
-            useFrench = formData.getBoolean("useFrench");
-            // ^Can also use req.bindJSON(this, formData);
-            //  (easier when there are many fields; need set* methods for this, like setUseFrench)
+            apiKey = formData.getString("herokuHost");
+            apiKey = formData.getString("apiKey");
+
             save();
             return super.configure(req,formData);
         }
 
-        /**
-         * This method returns true if the global configuration says we should speak French.
-         */
-        public boolean useFrench() {
-            return useFrench;
+        public String getApiKey() {
+            return apiKey;
+        }
+
+        public String getHerokuHost() {
+            return herokuHost;
         }
     }
 }
