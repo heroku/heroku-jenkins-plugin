@@ -13,6 +13,8 @@
     <version>1.0-SNAPSHOT</version>
     <packaging>hpi</packaging>
 
+    <name>Heroku Plugin</name>
+
     <properties>
         <com.heroku.api.version>0.5-SNAPSHOT</com.heroku.api.version>
     </properties>
