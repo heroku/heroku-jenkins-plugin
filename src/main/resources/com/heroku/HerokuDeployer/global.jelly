@@ -1,9 +1,9 @@
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
     <f:section title="Heroku">
-        <f:entry title="API Key"
-                 description="API Key for Heroku User"
+        <f:entry title="Default API Key"
+                 description="Default API Key for Heroku. Can be overridden by individual jobs."
                  help="/plugin/heroku-jenkins/help-globalConfig.html">
-            <f:textbox name="apiKey" value="${descriptor.getApiKey()}"/>
+            <f:textbox name="defaultApiKey" value="${descriptor.getDefaultApiKey()}"/>
         </f:entry>
     </f:section>
 </j:jelly>
