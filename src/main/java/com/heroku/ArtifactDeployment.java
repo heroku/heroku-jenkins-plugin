@@ -22,12 +22,12 @@ import java.io.IOException;
 /**
  * @author Ryan Brainard
  */
-public class HerokuDeployer extends AbstractHerokuBuildStep {
+public class ArtifactDeployment extends AbstractHerokuBuildStep {
 
     private final String artifactPath;
 
     @DataBoundConstructor
-    public HerokuDeployer(String apiKey, String appName, String artifactPath) {
+    public ArtifactDeployment(String apiKey, String appName, String artifactPath) {
         super(apiKey, appName);
         this.artifactPath = artifactPath;
     }
