@@ -31,13 +31,13 @@ import java.io.IOException;
  */
 public class HerokuDeployer extends Builder {
 
-    private final String apiKey;
+    private final Secret apiKey;
     private final String appName;
     private final String artifactPath;
 
     @DataBoundConstructor
     public HerokuDeployer(String apiKey, String appName, String artifactPath) {
-        this.apiKey = apiKey;
+        this.apiKey = Secret.fromString(apiKey);
         this.appName = appName;
         this.artifactPath = artifactPath;
     }
@@ -51,17 +51,18 @@ public class HerokuDeployer extends Builder {
     }
 
     public String getApiKey() {
-        return apiKey;
+        return apiKey.getEncryptedValue();
     }
 
     private String getEffectiveApiKey() {
-        if (apiKey != null && !apiKey.trim().equals("")) {
-            return apiKey;
+        final String apiKeyPlainText = apiKey.getPlainText();
+        if (apiKeyPlainText != null && !apiKeyPlainText.trim().equals("")) {
+            return apiKeyPlainText;
         }
 
-        final String defaultApiKey = getDescriptor().defaultApiKey.getPlainText();
-        if (defaultApiKey != null && !defaultApiKey.trim().equals("")) {
-            return defaultApiKey;
+        final String defaultApiKeyPlainText = getDescriptor().defaultApiKey.getPlainText();
+        if (defaultApiKeyPlainText != null && !defaultApiKeyPlainText.trim().equals("")) {
+            return defaultApiKeyPlainText;
         }
 
         throw new RuntimeException("Heroku API key not specified.");
@@ -115,7 +116,7 @@ public class HerokuDeployer extends Builder {
     @Extension
     public static final class HerokuDeployerDescriptor extends BuildStepDescriptor<Builder> {
 
-        private Secret defaultApiKey;
+        private Secret defaultApiKey = Secret.fromString("");
 
         public boolean isApplicable(Class<? extends AbstractProject> aClass) {
             return true;
@@ -134,7 +135,7 @@ public class HerokuDeployer extends Builder {
         }
 
         public String getDefaultApiKey() {
-            return defaultApiKey.getEncryptedValue();
+            return "".equals(defaultApiKey.getPlainText()) ? "" : defaultApiKey.getEncryptedValue();
         }
 
         public FormValidation doCheckApiKey(@QueryParameter String apiKey) {
