@@ -16,6 +16,7 @@ import hudson.remoting.VirtualChannel;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import hudson.util.FormValidation;
+import hudson.util.Secret;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -58,7 +59,7 @@ public class HerokuDeployer extends Builder {
             return apiKey;
         }
 
-        final String defaultApiKey = getDescriptor().getDefaultApiKey();
+        final String defaultApiKey = getDescriptor().defaultApiKey.getPlainText();
         if (defaultApiKey != null && !defaultApiKey.trim().equals("")) {
             return defaultApiKey;
         }
@@ -114,7 +115,7 @@ public class HerokuDeployer extends Builder {
     @Extension
     public static final class HerokuDeployerDescriptor extends BuildStepDescriptor<Builder> {
 
-        private String defaultApiKey;
+        private Secret defaultApiKey;
 
         public boolean isApplicable(Class<? extends AbstractProject> aClass) {
             return true;
@@ -126,18 +127,18 @@ public class HerokuDeployer extends Builder {
 
         @Override
         public boolean configure(StaplerRequest req, JSONObject formData) throws FormException {
-            defaultApiKey = formData.getString("defaultApiKey");
+            defaultApiKey = Secret.fromString(formData.getString("defaultApiKey"));
 
             save();
             return super.configure(req, formData);
         }
 
         public String getDefaultApiKey() {
-            return defaultApiKey;
+            return defaultApiKey.getEncryptedValue();
         }
 
         public FormValidation doCheckApiKey(@QueryParameter String apiKey) {
-            if (Util.fixEmptyAndTrim(apiKey) != null && Util.fixEmptyAndTrim(defaultApiKey) != null) {
+            if (Util.fixEmptyAndTrim(apiKey) != null && Util.fixEmptyAndTrim(defaultApiKey.getPlainText()) != null) {
                 return FormValidation.warning("This key will override the default key. Set to blank to use default key.");
             }
 
@@ -145,7 +146,7 @@ public class HerokuDeployer extends Builder {
                 return FormValidation.ok();
             }
 
-            if (Util.fixEmptyAndTrim(defaultApiKey) != null) {
+            if (Util.fixEmptyAndTrim(defaultApiKey.getPlainText()) != null) {
                 return FormValidation.ok("Default API key will be used.");
             }
 
