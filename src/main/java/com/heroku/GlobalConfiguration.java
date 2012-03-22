@@ -7,6 +7,8 @@ import hudson.util.Secret;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
 
+import java.util.concurrent.atomic.AtomicReference;
+
 /**
  * @author Ryan Brainard
  */
@@ -19,13 +21,14 @@ public class GlobalConfiguration extends Builder {
      * @return plain text value
      */
     protected static String getDefaultKey() {
-        return DescriptorImpl.defaultApiKey.getPlainText();
+        return DescriptorImpl.defaultApiKey.get().getPlainText();
     }
 
     @Extension
     public static class DescriptorImpl extends AbstractHerokuBuildStep.AbstractHerokuBuildStepDescriptor {
 
-        private static Secret defaultApiKey = Secret.fromString("");
+        @SuppressWarnings("UnusedDeclaration")
+        private static AtomicReference<Secret> defaultApiKey = new AtomicReference<Secret>(Secret.fromString(""));
 
         @Override
         public boolean isApplicable(Class<? extends AbstractProject> jobType) {
@@ -43,12 +46,13 @@ public class GlobalConfiguration extends Builder {
          * @return encrypted value
          */
         public String getDefaultApiKey() {
-            return "".equals(defaultApiKey.getPlainText()) ? "" : defaultApiKey.getEncryptedValue();
+            final Secret key = this.defaultApiKey.get();
+            return "".equals(key.getPlainText()) ? "" : key.getEncryptedValue();
         }
 
         @Override
         public boolean configure(StaplerRequest req, JSONObject formData) throws FormException {
-            defaultApiKey = Secret.fromString(formData.getString("defaultApiKey"));
+            defaultApiKey.set(Secret.fromString(formData.getString("defaultApiKey")));
 
             save();
             return super.configure(req, formData);
