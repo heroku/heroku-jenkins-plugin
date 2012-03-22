@@ -45,7 +45,7 @@ abstract class AbstractHerokuBuildStep extends Builder {
             return apiKeyPlainText;
         }
 
-        final String defaultApiKeyPlainText = GlobalConfiguration.DescriptorImpl.defaultApiKey.getPlainText();
+        final String defaultApiKeyPlainText = GlobalConfiguration.getDefaultKey();
         if (defaultApiKeyPlainText != null && !defaultApiKeyPlainText.trim().equals("")) {
             return defaultApiKeyPlainText;
         }
@@ -95,7 +95,7 @@ abstract class AbstractHerokuBuildStep extends Builder {
     public static abstract class AbstractHerokuBuildStepDescriptor extends BuildStepDescriptor<Builder> {
 
         public FormValidation doCheckApiKey(@QueryParameter String apiKey) {
-            if (Util.fixEmptyAndTrim(apiKey) != null && Util.fixEmptyAndTrim(GlobalConfiguration.DescriptorImpl.defaultApiKey.getPlainText()) != null) {
+            if (Util.fixEmptyAndTrim(apiKey) != null && Util.fixEmptyAndTrim(GlobalConfiguration.getDefaultKey()) != null) {
                 return FormValidation.warning("This key will override the default key. Set to blank to use default key.");
             }
 
@@ -103,7 +103,7 @@ abstract class AbstractHerokuBuildStep extends Builder {
                 return FormValidation.ok();
             }
 
-            if (Util.fixEmptyAndTrim(GlobalConfiguration.DescriptorImpl.defaultApiKey.getPlainText()) != null) {
+            if (Util.fixEmptyAndTrim(GlobalConfiguration.getDefaultKey()) != null) {
                 return FormValidation.ok("Default API key will be used.");
             }
 
