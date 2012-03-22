@@ -71,7 +71,7 @@ public class ArtifactDeployment extends AbstractHerokuBuildStep {
         }
 
         public String getDisplayName() {
-            return "Deploy to Heroku";
+            return "Heroku: Deploy Artifact";
         }
 
         public FormValidation doCheckArtifactPath(@AncestorInPath AbstractProject project, @QueryParameter String artifactPath) throws IOException {

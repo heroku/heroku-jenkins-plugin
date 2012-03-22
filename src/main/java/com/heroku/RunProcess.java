@@ -71,7 +71,7 @@ public class RunProcess extends AbstractHerokuBuildStep {
         }
 
         public String getDisplayName() {
-            return "Run Process on Heroku";
+            return "Heroku: Run Process";
         }
 
         public FormValidation doCheckCommand(@AncestorInPath AbstractProject project, @QueryParameter String command) throws IOException {
