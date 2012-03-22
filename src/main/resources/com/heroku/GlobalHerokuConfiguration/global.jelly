@@ -1,6 +1,6 @@
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
     <f:section title="Heroku">
-        <f:entry title="Default API Key"
+        <f:entry title="Default API Key G"
                  description="Default API Key for Heroku. Can be overridden by individual jobs.">
             <f:password name="defaultApiKey" value="${descriptor.getDefaultApiKey()}"/>
         </f:entry>

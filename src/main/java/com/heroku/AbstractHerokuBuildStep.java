@@ -4,16 +4,18 @@ import com.heroku.api.App;
 import com.heroku.api.Heroku;
 import com.heroku.api.HerokuAPI;
 import com.heroku.api.exception.RequestFailedException;
+import hudson.Launcher;
 import hudson.Util;
+import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import hudson.util.FormValidation;
 import hudson.util.Secret;
-import net.sf.json.JSONObject;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
+
+import java.io.IOException;
 
 /**
  * @author Ryan Brainard
@@ -43,7 +45,7 @@ abstract class AbstractHerokuBuildStep extends Builder {
             return apiKeyPlainText;
         }
 
-        final String defaultApiKeyPlainText = getDescriptor().defaultApiKey.getPlainText();
+        final String defaultApiKeyPlainText = GlobalConfiguration.DescriptorImpl.defaultApiKey.getPlainText();
         if (defaultApiKeyPlainText != null && !defaultApiKeyPlainText.trim().equals("")) {
             return defaultApiKeyPlainText;
         }
@@ -71,28 +73,29 @@ abstract class AbstractHerokuBuildStep extends Builder {
     }
 
     @Override
+    public boolean perform(final AbstractBuild build, final Launcher launcher, final BuildListener listener) throws IOException, InterruptedException {
+        final String effectiveApiKey = getEffectiveApiKey();
+        final HerokuAPI api = new HerokuAPI(effectiveApiKey);
+        final App app = getOrCreateApp(listener, api);
+        return perform(build, launcher, listener, api, app);
+    }
+
+    /**
+     * Subclasses should override this to get access to the Heroku API with the context of an app
+     */
+    protected boolean perform(final AbstractBuild build, final Launcher launcher, final BuildListener listener, HerokuAPI api, App app) throws IOException, InterruptedException {
+        return super.perform(build, launcher, listener);
+    }
+
+    @Override
     public AbstractHerokuBuildStepDescriptor getDescriptor() {
         return (AbstractHerokuBuildStepDescriptor) super.getDescriptor();
     }
 
     public static abstract class AbstractHerokuBuildStepDescriptor extends BuildStepDescriptor<Builder> {
 
-        private Secret defaultApiKey = Secret.fromString("");
-
-        @Override
-        public boolean configure(StaplerRequest req, JSONObject formData) throws FormException {
-            defaultApiKey = Secret.fromString(formData.getString("defaultApiKey"));
-
-            save();
-            return super.configure(req, formData);
-        }
-
-        public String getDefaultApiKey() {
-            return "".equals(defaultApiKey.getPlainText()) ? "" : defaultApiKey.getEncryptedValue();
-        }
-
         public FormValidation doCheckApiKey(@QueryParameter String apiKey) {
-            if (Util.fixEmptyAndTrim(apiKey) != null && Util.fixEmptyAndTrim(defaultApiKey.getPlainText()) != null) {
+            if (Util.fixEmptyAndTrim(apiKey) != null && Util.fixEmptyAndTrim(GlobalConfiguration.DescriptorImpl.defaultApiKey.getPlainText()) != null) {
                 return FormValidation.warning("This key will override the default key. Set to blank to use default key.");
             }
 
@@ -100,7 +103,7 @@ abstract class AbstractHerokuBuildStep extends Builder {
                 return FormValidation.ok();
             }
 
-            if (Util.fixEmptyAndTrim(defaultApiKey.getPlainText()) != null) {
+            if (Util.fixEmptyAndTrim(GlobalConfiguration.DescriptorImpl.defaultApiKey.getPlainText()) != null) {
                 return FormValidation.ok("Default API key will be used.");
             }
 

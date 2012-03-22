@@ -37,17 +37,12 @@ public class ArtifactDeployment extends AbstractHerokuBuildStep {
     }
 
     @Override
-    public boolean perform(final AbstractBuild build, final Launcher launcher, final BuildListener listener) {
-        final String effectiveApiKey = getEffectiveApiKey();
-        final HerokuAPI api = new HerokuAPI(effectiveApiKey);
-
-        App app = getOrCreateApp(listener, api);
-
+    public boolean perform(final AbstractBuild build, final Launcher launcher, final BuildListener listener, final HerokuAPI api, final App app) {
         listener.getLogger().println("Pushing " + artifactPath + " to " + app.getName() + "...");
         try {
             build.getWorkspace().child(artifactPath).act(new FilePath.FileCallable<Void>() {
                 public Void invoke(File artifactFile, VirtualChannel channel) throws IOException, InterruptedException {
-                    new WarPusher(effectiveApiKey).push(getAppName(), artifactFile);
+                    new WarPusher(api.getApiKey()).push(getAppName(), artifactFile);
                     return null;
                 }
             });
