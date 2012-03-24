@@ -49,8 +49,8 @@
             <version>${com.heroku.api.version}</version>
         </dependency>
         <dependency>
-            <groupId>heroku-warpath-jar</groupId>
-            <artifactId>heroku-warpath-jar</artifactId>
+            <groupId>warpath-client</groupId>
+            <artifactId>warpath-client_2.9.1</artifactId>
             <version>0.1-SNAPSHOT</version>
         </dependency>
     </dependencies>
