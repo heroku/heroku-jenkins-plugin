@@ -2,7 +2,7 @@ package com.heroku;
 
 import com.heroku.api.App;
 import com.heroku.api.HerokuAPI;
-import com.herokuapp.warpath.client.Client;
+import com.herokuapp.directto.client.Client;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
@@ -42,8 +42,7 @@ public class ArtifactDeployment extends AbstractHerokuBuildStep {
         try {
             build.getWorkspace().child(artifactPath).act(new FilePath.FileCallable<Void>() {
                 public Void invoke(File artifactFile, VirtualChannel channel) throws IOException, InterruptedException {
-//                    new WarPusher(api.getApiKey()).push(getAppName(), artifactFile);
-                    new Client(api.getApiKey(), "warpath.herokuapp.com").deployWar(app.getName(), artifactFile);
+                    new Client(api.getApiKey()).deployWar(app.getName(), artifactFile);
                     return null;
                 }
             });
