@@ -2,7 +2,7 @@ package com.heroku;
 
 import com.heroku.api.App;
 import com.heroku.api.HerokuAPI;
-import com.herokuapp.directto.client.DirectToHerokuClientForJava;
+import com.herokuapp.directto.client.DirectToHerokuClient;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
@@ -45,7 +45,7 @@ public class ArtifactDeployment extends AbstractHerokuBuildStep {
         try {
             build.getWorkspace().child(artifactPath).act(new FilePath.FileCallable<Void>() {
                 public Void invoke(File artifactFile, VirtualChannel channel) throws IOException, InterruptedException {
-                    final DirectToHerokuClientForJava client = new DirectToHerokuClientForJava(getEffectiveApiKey());
+                    final DirectToHerokuClient client = new DirectToHerokuClient(getEffectiveApiKey());
 
                     final Map<String, File> artifacts = new HashMap<String, File>(1);
                     artifacts.put("war", artifactFile);

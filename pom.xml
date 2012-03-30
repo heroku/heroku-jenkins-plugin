@@ -34,24 +34,24 @@
 
     <dependencies>
         <dependency>
+            <groupId>com.herokuapp.directto</groupId>
+            <artifactId>direct-to-heroku-client</artifactId>
+            <version>0.2-SNAPSHOT</version>
+        </dependency>
+        <dependency>
             <groupId>com.heroku.api</groupId>
             <artifactId>heroku-api</artifactId>
             <version>${com.heroku.api.version}</version>
         </dependency>
-        <dependency>
-            <groupId>com.heroku.api</groupId>
-            <artifactId>heroku-json-jackson</artifactId>
-            <version>${com.heroku.api.version}</version>
-        </dependency>
+        <!--<dependency>-->
+        <!--<groupId>com.heroku.api</groupId>-->
+        <!--<artifactId>heroku-json-jackson</artifactId>-->
+        <!--<version>${com.heroku.api.version}</version>-->
+        <!--</dependency>-->
         <dependency>
             <groupId>com.heroku.api</groupId>
             <artifactId>heroku-http-apache</artifactId>
             <version>${com.heroku.api.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>direct-to-heroku-client</groupId>
-            <artifactId>direct-to-heroku-client_2.9.1</artifactId>
-            <version>0.1-SNAPSHOT</version>
         </dependency>
     </dependencies>
 </project>
