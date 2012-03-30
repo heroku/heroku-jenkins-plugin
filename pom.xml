@@ -17,6 +17,7 @@
 
     <properties>
         <com.heroku.api.version>0.5</com.heroku.api.version>
+        <jackson.version>1.8.3</jackson.version>
     </properties>
 
     <repositories>
@@ -32,6 +33,21 @@
         </pluginRepository>
     </pluginRepositories>
 
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.codehaus.jackson</groupId>
+                <artifactId>jackson-mapper-asl</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.codehaus.jackson</groupId>
+                <artifactId>jackson-core-asl</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <dependencies>
         <dependency>
             <groupId>com.heroku.api</groupId>
@@ -40,37 +56,14 @@
         </dependency>
         <dependency>
             <groupId>com.heroku.api</groupId>
+            <artifactId>heroku-json-jackson</artifactId>
+            <version>${com.heroku.api.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.heroku.api</groupId>
             <artifactId>heroku-http-apache</artifactId>
             <version>${com.heroku.api.version}</version>
         </dependency>
-
-        <!-- Exclude Jackson used by Heroku and explicitly depend on 1.8.3 to resolve version conflict -->
-        <dependency>
-            <groupId>com.heroku.api</groupId>
-            <artifactId>heroku-json-jackson</artifactId>
-            <version>${com.heroku.api.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.codehaus.jackson</groupId>
-                    <artifactId>jackson-mapper-asl</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.codehaus.jackson</groupId>
-                    <artifactId>jackson-core-asl</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>org.codehaus.jackson</groupId>
-            <artifactId>jackson-mapper-asl</artifactId>
-            <version>1.8.3</version>
-        </dependency>
-        <dependency>
-            <groupId>org.codehaus.jackson</groupId>
-            <artifactId>jackson-core-asl</artifactId>
-            <version>1.8.3</version>
-        </dependency>
-
         <dependency>
             <groupId>com.herokuapp.directto</groupId>
             <artifactId>direct-to-heroku-client</artifactId>
