@@ -2,7 +2,7 @@ package com.heroku;
 
 import com.heroku.api.App;
 import com.heroku.api.HerokuAPI;
-import com.herokuapp.directto.client.Client;
+import com.herokuapp.directto.client.DirectToHerokuClientForJava;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
@@ -18,6 +18,8 @@ import org.kohsuke.stapler.QueryParameter;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Ryan Brainard
@@ -39,10 +41,20 @@ public class ArtifactDeployment extends AbstractHerokuBuildStep {
     @Override
     public boolean perform(final AbstractBuild build, final Launcher launcher, final BuildListener listener, final HerokuAPI api, final App app) {
         listener.getLogger().println("Pushing " + artifactPath + " to " + app.getName() + "...");
+
         try {
             build.getWorkspace().child(artifactPath).act(new FilePath.FileCallable<Void>() {
                 public Void invoke(File artifactFile, VirtualChannel channel) throws IOException, InterruptedException {
-                    new Client(api.getApiKey()).deployWar(app.getName(), artifactFile);
+                    final DirectToHerokuClientForJava client = new DirectToHerokuClientForJava(getEffectiveApiKey());
+
+                    final Map<String, File> artifacts = new HashMap<String, File>(1);
+                    artifacts.put("war", artifactFile);
+
+                    final Map<String, String> deployResults = client.deploy("war", app.getName(), artifacts);
+                    for (Map.Entry<String, String> result : deployResults.entrySet()) {
+                        listener.getLogger().println(result.getKey() + ":" + result.getValue());
+                    }
+
                     return null;
                 }
             });
