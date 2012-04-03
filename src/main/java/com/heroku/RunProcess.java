@@ -46,8 +46,9 @@ public class RunProcess extends AbstractHerokuBuildStep {
         InputStream runStream = null;
         try {
             runStream = new BufferedInputStream(runResponse.attach());
-            while (runStream.available() > 0) {
-                listener.getLogger().write(runStream.read());
+            int next;
+            while ((next = runStream.read()) != -1) {
+                listener.getLogger().write(next);
             }
 
         } finally {
