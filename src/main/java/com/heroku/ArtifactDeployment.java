@@ -3,6 +3,7 @@ package com.heroku;
 import com.heroku.api.App;
 import com.heroku.api.HerokuAPI;
 import com.herokuapp.directto.client.DirectToHerokuClient;
+import com.herokuapp.directto.client.VerificationException;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
@@ -42,20 +43,31 @@ public class ArtifactDeployment extends AbstractHerokuBuildStep {
     public boolean perform(final AbstractBuild build, final Launcher launcher, final BuildListener listener, final HerokuAPI api, final App app) {
         listener.getLogger().println("Pushing " + artifactPath + " to " + app.getName() + "...");
 
+        final boolean result;
         try {
-            build.getWorkspace().child(artifactPath).act(new FilePath.FileCallable<Void>() {
-                public Void invoke(File artifactFile, VirtualChannel channel) throws IOException, InterruptedException {
+            result = build.getWorkspace().child(artifactPath).act(new FilePath.FileCallable<Boolean>() {
+                public Boolean invoke(File artifactFile, VirtualChannel channel) throws IOException, InterruptedException {
                     final DirectToHerokuClient client = new DirectToHerokuClient(getEffectiveApiKey());
 
                     final Map<String, File> artifacts = new HashMap<String, File>(1);
                     artifacts.put("war", artifactFile);
+
+                    try {
+                        client.verify("war", app.getName(), artifacts);
+                    } catch (VerificationException e) {
+                        for (String err : e.getMessages()) {
+                            listener.error(err);
+                        }
+                        return false;
+                    }
 
                     final Map<String, String> deployResults = client.deploy("war", app.getName(), artifacts);
                     for (Map.Entry<String, String> result : deployResults.entrySet()) {
                         listener.getLogger().println(result.getKey() + ":" + result.getValue());
                     }
 
-                    return null;
+                    listener.getLogger().println("Push successful: " + app.getWebUrl());
+                    return true;
                 }
             });
         } catch (IOException e) {
@@ -65,9 +77,8 @@ public class ArtifactDeployment extends AbstractHerokuBuildStep {
             listener.error(e.getMessage());
             return false;
         }
-        listener.getLogger().println("Push successful: " + app.getWebUrl());
 
-        return true;
+        return result;
     }
 
     @Override
