@@ -7,6 +7,10 @@
         <f:textbox/>
     </f:entry>
 
+    <f:entry title="Pipeline" field="pipelineName">
+        <f:textbox/>
+    </f:entry>
+
     <f:entry title="Artifact Path" field="artifactPath">
         <f:textbox/>
     </f:entry>

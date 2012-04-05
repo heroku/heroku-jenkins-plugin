@@ -1,5 +1,6 @@
 package com.heroku;
 
+import com.google.common.collect.ImmutableMap;
 import com.heroku.api.App;
 import com.heroku.api.HerokuAPI;
 import com.herokuapp.directto.client.DirectToHerokuClient;
@@ -27,12 +28,14 @@ import java.util.Map;
  */
 public class ArtifactDeployment extends AbstractHerokuBuildStep {
 
-    private final String artifactPath;
+    private final String pipelineName;
+    private final Map<String, String> artifactPaths;
 
     @DataBoundConstructor
-    public ArtifactDeployment(String apiKey, String appName, String artifactPath) {
+    public ArtifactDeployment(String apiKey, String appName, String pipelineName, String artifactPath) {
         super(apiKey, appName);
-        this.artifactPath = artifactPath;
+        this.pipelineName = pipelineName;
+        this.artifactPaths = ImmutableMap.of("war", artifactPath);
     }
 
     // Overridding and delegating to parent because Jelly only looks at concrete class when rendering views
@@ -47,25 +50,31 @@ public class ArtifactDeployment extends AbstractHerokuBuildStep {
         return super.getApiKey();
     }
 
+    public String getPipelineName() {
+        return pipelineName;
+    }
+
     public String getArtifactPath() {
-        return artifactPath;
+        return artifactPaths.get("war");
     }
 
     @Override
     public boolean perform(final AbstractBuild build, final Launcher launcher, final BuildListener listener, final HerokuAPI api, final App app) {
-        listener.getLogger().println("Pushing " + artifactPath + " to " + app.getName() + "...");
+        listener.getLogger().println("Pushing " + artifactPaths + " to " + app.getName() + "...");
 
         final boolean result;
         try {
-            result = build.getWorkspace().child(artifactPath).act(new FilePath.FileCallable<Boolean>() {
-                public Boolean invoke(File artifactFile, VirtualChannel channel) throws IOException, InterruptedException {
+            result = build.getWorkspace().act(new FilePath.FileCallable<Boolean>() {
+                public Boolean invoke(File workspace, VirtualChannel channel) throws IOException, InterruptedException {
                     final DirectToHerokuClient client = new DirectToHerokuClient(getEffectiveApiKey());
 
-                    final Map<String, File> artifacts = new HashMap<String, File>(1);
-                    artifacts.put("war", artifactFile);
+                    final Map<String, File> artifacts = new HashMap<String, File>(artifactPaths.size());
+                    for (Map.Entry<String, String> artifactPath : artifactPaths.entrySet()) {
+                        artifacts.put(artifactPath.getKey(), new File(workspace + File.separator + artifactPath.getValue()));
+                    }
 
                     try {
-                        client.verify("war", app.getName(), artifacts);
+                        client.verify(pipelineName, app.getName(), artifacts);
                     } catch (VerificationException e) {
                         for (String err : e.getMessages()) {
                             listener.error(err);
@@ -73,7 +82,7 @@ public class ArtifactDeployment extends AbstractHerokuBuildStep {
                         return false;
                     }
 
-                    final Map<String, String> deployResults = client.deploy("war", app.getName(), artifacts);
+                    final Map<String, String> deployResults = client.deploy(pipelineName, app.getName(), artifacts);
                     for (Map.Entry<String, String> result : deployResults.entrySet()) {
                         listener.getLogger().println(result.getKey() + ":" + result.getValue());
                     }
