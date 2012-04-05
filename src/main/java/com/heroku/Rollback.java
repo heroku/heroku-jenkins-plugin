@@ -26,6 +26,18 @@ public class Rollback extends AbstractHerokuBuildStep {
         super(apiKey, appName);
     }
 
+    // Overridding and delegating to parent because Jelly only looks at concrete class when rendering views
+    @Override
+    public String getAppName() {
+        return super.getAppName();
+    }
+
+    // Overridding and delegating to parent because Jelly only looks at concrete class when rendering views
+    @Override
+    public String getApiKey() {
+        return super.getApiKey();
+    }
+
     @Override
     protected boolean perform(AbstractBuild build, Launcher launcher, BuildListener listener, HerokuAPI api, App app) throws IOException, InterruptedException {
         final List<Release> releases = api.listReleases(app.getName());

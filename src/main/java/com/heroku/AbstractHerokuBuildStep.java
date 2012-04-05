@@ -31,6 +31,7 @@ abstract class AbstractHerokuBuildStep extends Builder {
         this.appName = appName;
     }
 
+    // Must override and delegate back to this method if using in config.jelly for a concrete task
     public String getAppName() {
         return appName;
     }
@@ -41,6 +42,7 @@ abstract class AbstractHerokuBuildStep extends Builder {
      *
      * @return API key explicitly set for this build step
      */
+    // Must override and delegate back to this method if using in config.jelly for a concrete task
     public String getApiKey() {
         return apiKey.getEncryptedValue();
     }
