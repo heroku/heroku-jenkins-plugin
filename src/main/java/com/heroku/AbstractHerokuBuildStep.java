@@ -35,17 +35,29 @@ abstract class AbstractHerokuBuildStep extends Builder {
         return appName;
     }
 
+    /**
+     * Not for use by tasks needing the API key.
+     * You probably want to use {@link #getEffectiveApiKey()} instead.
+     *
+     * @return API key explicitly set for this build step
+     */
     public String getApiKey() {
         return apiKey.getEncryptedValue();
     }
 
+    /**
+     * If an API key is not explicitly defined for this specific build step,
+     * the default key from {@link HerokuPlugin} is used.
+     *
+     * @return API key tasks should use
+     */
     protected String getEffectiveApiKey() {
         final String apiKeyPlainText = apiKey.getPlainText();
         if (apiKeyPlainText != null && !apiKeyPlainText.trim().equals("")) {
             return apiKeyPlainText;
         }
 
-        final String defaultApiKeyPlainText = GlobalConfiguration.getDefaultKey();
+        final String defaultApiKeyPlainText = HerokuPlugin.get().getDefaultApiKeyPlainText();
         if (defaultApiKeyPlainText != null && !defaultApiKeyPlainText.trim().equals("")) {
             return defaultApiKeyPlainText;
         }
@@ -74,8 +86,7 @@ abstract class AbstractHerokuBuildStep extends Builder {
 
     @Override
     public boolean perform(final AbstractBuild build, final Launcher launcher, final BuildListener listener) throws IOException, InterruptedException {
-        final String effectiveApiKey = getEffectiveApiKey();
-        final HerokuAPI api = new HerokuAPI(effectiveApiKey);
+        final HerokuAPI api = new HerokuAPI(getEffectiveApiKey());
         final App app = getOrCreateApp(listener, api);
         return perform(build, launcher, listener, api, app);
     }
@@ -95,7 +106,7 @@ abstract class AbstractHerokuBuildStep extends Builder {
     public static abstract class AbstractHerokuBuildStepDescriptor extends BuildStepDescriptor<Builder> {
 
         public FormValidation doCheckApiKey(@QueryParameter String apiKey) {
-            if (Util.fixEmptyAndTrim(apiKey) != null && Util.fixEmptyAndTrim(GlobalConfiguration.getDefaultKey()) != null) {
+            if (Util.fixEmptyAndTrim(apiKey) != null && Util.fixEmptyAndTrim(HerokuPlugin.get().getDefaultApiKeyPlainText()) != null) {
                 return FormValidation.warning("This key will override the default key. Set to blank to use default key.");
             }
 
@@ -103,7 +114,7 @@ abstract class AbstractHerokuBuildStep extends Builder {
                 return FormValidation.ok();
             }
 
-            if (Util.fixEmptyAndTrim(GlobalConfiguration.getDefaultKey()) != null) {
+            if (Util.fixEmptyAndTrim(HerokuPlugin.get().getDefaultApiKeyPlainText()) != null) {
                 return FormValidation.ok("Default API key will be used.");
             }
 

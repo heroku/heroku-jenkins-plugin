@@ -2,7 +2,7 @@
     <f:section title="Heroku">
         <f:entry title="Default API Key"
                  description="Default API Key for Heroku. Can be overridden by individual jobs.">
-            <f:password name="defaultApiKey" value="${descriptor.getDefaultApiKey()}"/>
+            <f:password name="defaultApiKey" value="${it.defaultApiKey}"/>
         </f:entry>
     </f:section>
 </j:jelly>
