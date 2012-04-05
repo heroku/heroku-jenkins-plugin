@@ -28,7 +28,7 @@ public final class HerokuPlugin extends Plugin {
      * @return encrypted api key
      */
     public String getDefaultApiKey() {
-        return "".equals(defaultApiKey.getPlainText()) ? "" : defaultApiKey.getEncryptedValue();
+        return "".equals(Secret.toString(defaultApiKey)) ? "" : defaultApiKey.getEncryptedValue();
     }
 
     /**
@@ -37,7 +37,7 @@ public final class HerokuPlugin extends Plugin {
      * @return plain text api key
      */
     String getDefaultApiKeyPlainText() {
-        return defaultApiKey.getPlainText();
+        return Secret.toString(defaultApiKey);
     }
 
     @Override
