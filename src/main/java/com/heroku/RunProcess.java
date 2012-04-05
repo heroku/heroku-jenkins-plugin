@@ -72,16 +72,12 @@ public class RunProcess extends AbstractHerokuBuildStep {
 
 
     @Override
-    public DescriptorImpl getDescriptor() {
-        return (DescriptorImpl) super.getDescriptor();
+    public RunProcessDescriptor getDescriptor() {
+        return (RunProcessDescriptor) super.getDescriptor();
     }
 
     @Extension
-    public static final class DescriptorImpl extends AbstractHerokuBuildStepDescriptor {
-
-        public boolean isApplicable(Class<? extends AbstractProject> aClass) {
-            return true;
-        }
+    public static final class RunProcessDescriptor extends AbstractHerokuBuildStepDescriptor {
 
         public String getDisplayName() {
             return "Heroku: Run Process";

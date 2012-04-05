@@ -7,6 +7,7 @@ import com.heroku.api.exception.RequestFailedException;
 import hudson.Launcher;
 import hudson.Util;
 import hudson.model.AbstractBuild;
+import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
@@ -106,6 +107,11 @@ abstract class AbstractHerokuBuildStep extends Builder {
     }
 
     public static abstract class AbstractHerokuBuildStepDescriptor extends BuildStepDescriptor<Builder> {
+
+        @Override
+        public boolean isApplicable(Class<? extends AbstractProject> jobType) {
+            return true;
+        }
 
         public FormValidation doCheckApiKey(@QueryParameter String apiKey) {
             if (Util.fixEmptyAndTrim(apiKey) != null && Util.fixEmptyAndTrim(HerokuPlugin.get().getDefaultApiKeyPlainText()) != null) {

@@ -52,16 +52,12 @@ public class Rollback extends AbstractHerokuBuildStep {
 
 
     @Override
-    public DescriptorImpl getDescriptor() {
-        return (DescriptorImpl) super.getDescriptor();
+    public RollbackDescriptor getDescriptor() {
+        return (RollbackDescriptor) super.getDescriptor();
     }
 
     @Extension
-    public static final class DescriptorImpl extends AbstractHerokuBuildStepDescriptor {
-
-        public boolean isApplicable(Class<? extends AbstractProject> aClass) {
-            return true;
-        }
+    public static final class RollbackDescriptor extends AbstractHerokuBuildStepDescriptor {
 
         public String getDisplayName() {
             return "Heroku: Rollback";
