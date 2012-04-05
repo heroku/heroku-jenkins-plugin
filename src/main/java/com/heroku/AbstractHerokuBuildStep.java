@@ -44,7 +44,7 @@ abstract class AbstractHerokuBuildStep extends Builder {
      */
     // Must override and delegate back to this method if using in config.jelly for a concrete task
     public String getApiKey() {
-        return apiKey.getEncryptedValue();
+        return "".equals(Secret.toString(apiKey)) ? "" : apiKey.getEncryptedValue();
     }
 
     /**

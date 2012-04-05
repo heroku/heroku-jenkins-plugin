@@ -1,0 +1,17 @@
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
+    <f:entry title="API Key" field="apiKey">
+        <f:password/>
+    </f:entry>
+
+    <f:entry title="App Name" field="appName">
+        <f:textbox/>
+    </f:entry>
+
+    <f:entry title="TAR GZ Path" field="targzPath">
+        <f:textbox/>
+    </f:entry>
+
+    <f:entry title="Procfile Path" field="procfilePath">
+        <f:textbox/>
+    </f:entry>
+</j:jelly>
