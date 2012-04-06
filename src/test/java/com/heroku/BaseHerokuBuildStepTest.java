@@ -13,7 +13,7 @@ import static org.mockito.Mockito.when;
 /**
  * @author Ryan Brainard
  */
-public class BaseHerokuBuildStepTest extends HudsonTestCase {
+public abstract class BaseHerokuBuildStepTest extends HudsonTestCase {
 
     protected final String appName = System.getProperty("heroku.appName");
     protected final String apiKey = System.getProperty("heroku.apiKey");
