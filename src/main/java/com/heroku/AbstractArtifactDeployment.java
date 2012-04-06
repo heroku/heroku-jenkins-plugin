@@ -62,7 +62,7 @@ public abstract class AbstractArtifactDeployment extends AbstractHerokuBuildStep
                         listener.getLogger().println(result.getKey() + ":" + result.getValue());
                     }
 
-                    listener.getLogger().println("Push successful: " + app.getWebUrl());
+                    listener.getLogger().println("Deployment successful: " + app.getWebUrl());
                     return true;
                 }
             });
