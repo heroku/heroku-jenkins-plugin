@@ -44,6 +44,8 @@ public class ArtifactDeploymentTest extends BaseHerokuBuildStepTest {
     }
 
     public void runTest() throws Exception {
+        assertNotNull("Jelly file should exists", ClassLoader.getSystemResource(deploymentStepClass.getName().replaceAll("\\.", File.separator) + File.separator + "config.jelly"));
+
         final FreeStyleProject project = createFreeStyleProject();
         project.scheduleBuild2(0).get(); // run build once get create workspace
         for (File a : artifacts) {
