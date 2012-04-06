@@ -1,5 +1,6 @@
 package com.heroku;
 
+import com.heroku.api.App;
 import com.heroku.api.HerokuAPI;
 import hudson.model.BuildListener;
 import org.jvnet.hudson.test.HudsonTestCase;
@@ -23,5 +24,24 @@ public class BaseHerokuBuildStepTest extends HudsonTestCase {
 
     {
         when(listener.getLogger()).thenReturn(stream);
+    }
+
+    /**
+     * Runs with a new app and then destroys the app
+     *
+     * @param runnable the code you want to run in the context of the new app
+     */
+    protected void runWithNewApp(AppRunnable runnable) throws Exception {
+        App newApp = null;
+        try {
+            newApp = api.createApp();
+            runnable.run(newApp);
+        } finally {
+            if (newApp != null) api.destroyApp(newApp.getName());
+        }
+    }
+
+    protected interface AppRunnable {
+        void run(App app) throws Exception;
     }
 }

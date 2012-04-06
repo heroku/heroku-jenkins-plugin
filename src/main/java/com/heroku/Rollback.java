@@ -22,7 +22,7 @@ import java.util.List;
 public class Rollback extends AbstractHerokuBuildStep {
 
     @DataBoundConstructor
-    public Rollback(String apiKey, String appName, String command) {
+    public Rollback(String apiKey, String appName) {
         super(apiKey, appName);
     }
 
@@ -41,6 +41,12 @@ public class Rollback extends AbstractHerokuBuildStep {
     @Override
     protected boolean perform(AbstractBuild build, Launcher launcher, BuildListener listener, HerokuAPI api, App app) throws IOException, InterruptedException {
         final List<Release> releases = api.listReleases(app.getName());
+
+        if (releases.size() < 2) {
+            listener.error("Cannot rollback to before app was created.");
+            return false;
+        }
+
         final Release lastRelease = releases.get(releases.size() - 2);
 
         listener.getLogger().println("Rolling back to " + lastRelease.getName() + "(" + lastRelease.getCommit() + ") ...");
