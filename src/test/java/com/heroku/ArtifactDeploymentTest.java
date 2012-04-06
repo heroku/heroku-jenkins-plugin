@@ -19,7 +19,15 @@ public class ArtifactDeploymentTest extends BaseHerokuBuildStepTest {
     public static TestSuite suite() {
         TestSuite suite = new TestSuite();
         try {
-            suite.addTest(new ArtifactDeploymentTest(WarDeployment.class, File.createTempFile("test", ".war")));
+            suite.addTest(new ArtifactDeploymentTest(
+                    WarDeployment.class,
+                    File.createTempFile("test", ".war")));
+
+            suite.addTest(new ArtifactDeploymentTest(
+                    TarGzDeployment.class,
+                    File.createTempFile("test", ".tar.gz"),
+                    new File(ClassLoader.getSystemResource("Procfile").getFile())));
+
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -45,7 +53,7 @@ public class ArtifactDeploymentTest extends BaseHerokuBuildStepTest {
         project.getBuildersList().add(createDeploymentBuildStep());
         FreeStyleBuild build = project.scheduleBuild2(0).get();
         String logs = FileUtils.readFileToString(build.getLogFile());
-        assertTrue(logs.contains("Deployment successful"));
+        assertTrue(logs, logs.contains("Deployment successful"));
     }
 
     private AbstractArtifactDeployment createDeploymentBuildStep() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, InstantiationException {
