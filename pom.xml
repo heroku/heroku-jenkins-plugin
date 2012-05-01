@@ -10,12 +10,13 @@
 
     <groupId>com.heroku</groupId>
     <artifactId>heroku-jenkins-plugin</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>0.1-SNAPSHOT</version>
     <packaging>hpi</packaging>
 
     <name>Heroku Plugin for Jenkins</name>
 
     <properties>
+        <heroku-jenkins-plugin.version>${project.version}</heroku-jenkins-plugin.version>
         <com.heroku.api.version>0.8-SNAPSHOT</com.heroku.api.version>
         <jackson.version>1.8.3</jackson.version>
     </properties>
@@ -76,4 +77,15 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+    <build>
+        <resources>
+            <resource>
+                <directory>${basedir}/src/main/resources</directory>
+                <filtering>true</filtering>
+                <includes>
+                    <include>**/*</include>
+                </includes>
+            </resource>
+        </resources>
+    </build>
 </project>
