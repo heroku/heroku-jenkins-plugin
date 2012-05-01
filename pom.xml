@@ -16,7 +16,7 @@
     <name>Heroku Plugin for Jenkins</name>
 
     <properties>
-        <com.heroku.api.version>0.5</com.heroku.api.version>
+        <com.heroku.api.version>0.8-SNAPSHOT</com.heroku.api.version>
         <jackson.version>1.8.3</jackson.version>
     </properties>
 
