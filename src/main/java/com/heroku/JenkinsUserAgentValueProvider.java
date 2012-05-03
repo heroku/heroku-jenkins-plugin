@@ -13,6 +13,10 @@ public class JenkinsUserAgentValueProvider extends UserAgentValueProvider.DEFAUL
         this.localUserAgent = "heroku-jenkins-plugin/" + HerokuPlugin.get().getPluginVersion();
     }
 
+    public String getLocalUserAgent() {
+        return localUserAgent;
+    }
+
     public String getHeaderValue(String customPart) {
         return localUserAgent + " " + super.getHeaderValue(customPart);
     }

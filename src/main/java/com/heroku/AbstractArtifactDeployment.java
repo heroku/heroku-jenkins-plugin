@@ -39,7 +39,10 @@ public abstract class AbstractArtifactDeployment extends AbstractHerokuBuildStep
         try {
             result = build.getWorkspace().act(new FilePath.FileCallable<Boolean>() {
                 public Boolean invoke(File workspace, VirtualChannel channel) throws IOException, InterruptedException {
-                    final DirectToHerokuClient client = new DirectToHerokuClient(getEffectiveApiKey());
+                    final DirectToHerokuClient client = new DirectToHerokuClient.Builder()
+                            .setApiKey(getEffectiveApiKey())
+                            .setConsumersUserAgent(new JenkinsUserAgentValueProvider().getLocalUserAgent())
+                            .build();
 
                     final Map<String, File> artifacts = new HashMap<String, File>(artifactPaths.size());
                     for (Map.Entry<String, String> artifactPath : artifactPaths.entrySet()) {
