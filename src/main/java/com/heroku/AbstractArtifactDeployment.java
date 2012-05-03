@@ -84,10 +84,6 @@ public abstract class AbstractArtifactDeployment extends AbstractHerokuBuildStep
 
     public static abstract class AbstractArtifactDeploymentDescriptor extends AbstractHerokuBuildStepDescriptor {
 
-        public boolean isApplicable(Class<? extends AbstractProject> aClass) {
-            return true;
-        }
-
         public abstract String getPipelineName();
 
         public String getDisplayName() {

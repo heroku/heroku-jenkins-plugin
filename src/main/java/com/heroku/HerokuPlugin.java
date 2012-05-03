@@ -5,17 +5,39 @@ import hudson.model.Descriptor;
 import hudson.model.Hudson;
 import hudson.util.Secret;
 import net.sf.json.JSONObject;
+import org.apache.commons.collections.map.UnmodifiableMap;
 import org.kohsuke.stapler.StaplerRequest;
 
 import javax.servlet.ServletException;
 import java.io.IOException;
+import java.util.Map;
+import java.util.Properties;
 
 /**
  * @author Ryan Brainard
  */
 public final class HerokuPlugin extends Plugin {
 
+    static HerokuPlugin get() {
+        return Hudson.getInstance().getPlugin(HerokuPlugin.class);
+    }
+
+    /**
+     * @return Unmodifiable map of project properties
+     */
+    private static Map<String, String> loadProjectProperties() {
+        Properties projectProperties = new Properties();
+        try {
+            projectProperties.load(HerokuPlugin.class.getClassLoader().getResourceAsStream("heroku-jenkins-plugin.properties"));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        //noinspection unchecked
+        return UnmodifiableMap.decorate(projectProperties);
+    }
+
     private Secret defaultApiKey;
+    private final Map<String, String> projectProperties = loadProjectProperties();
 
     @Override
     public void start() throws Exception {
@@ -47,7 +69,22 @@ public final class HerokuPlugin extends Plugin {
         save();
     }
 
-    static HerokuPlugin get() {
-        return Hudson.getInstance().getPlugin(HerokuPlugin.class);
+    /**
+     * @return version of this heroku-jenkins-plugin project from pom.xml
+     */
+    String getPluginVersion() {
+        return projectProperties.get("heroku-jenkins-plugin.version");
     }
+
+    /**
+     * Checks project properties to see if a given attribute is enable.
+     *
+     * @param enableable String value of something that can have .enabled appended in property file. Usually a build step class name.
+     * @return true if enabled
+     */
+    public boolean isEnabled(String enableable) {
+        final String enabledKey = enableable + ".enabled";
+        return projectProperties.containsKey(enabledKey) && Boolean.valueOf(projectProperties.get(enabledKey));
+    }
+
 }
