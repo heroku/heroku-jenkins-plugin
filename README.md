@@ -48,13 +48,13 @@ Building from Source
 2. This plugin has a dependency on [direct-to-heroku-client](https://github.com/heroku/direct-to-heroku-client-java),
    which is not yet in Maven central. To build this plugin, you must first build the client from source:
 
-     `git clone git@github.com:heroku/direct-to-heroku-client-java.git`
+     `git clone git://github.com/heroku/direct-to-heroku-client-java.git`
 
      `mvn clean install -DskipTests`
 
 3. Build the plugin:
 
-     `git clone git@github.com:heroku/heroku-jenkins-plugin.git`
+     `git clone git://github.com/heroku/heroku-jenkins-plugin.git`
 
      `mvn clean package -DskipTests`
 
