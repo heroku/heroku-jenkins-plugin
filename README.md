@@ -35,7 +35,7 @@ After the WAR file is created, add the `Heroku: Deploy WAR Artifact` build step 
 
  - API Key: Your Heroku API key to use for deployment. This is only required if a global default is not already configured. Your Heroku API key can be obtained from your [Heroku account page](https://api.heroku.com/account).
  - App Name: The app to which to deploy. If the app exists, you must have access to deploy new releases. If the app does not exist and the name is not already taken, it will be created for you.
- - WAR Path: The relative path to the WAR file created in a previous build step.
+ - WAR Path: The relative path to the WAR file created in a previous build step to deploy.
 
 When the build runs, the WAR file will be uploaded and deployed to Heroku.
 
