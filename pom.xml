@@ -68,7 +68,7 @@
         <dependency>
             <groupId>com.herokuapp.directto</groupId>
             <artifactId>direct-to-heroku-client</artifactId>
-            <version>0.3-SNAPSHOT</version>
+            <version>0.4-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.mockito</groupId>
