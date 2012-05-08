@@ -10,7 +10,7 @@
 
     <groupId>com.heroku</groupId>
     <artifactId>heroku-jenkins-plugin</artifactId>
-    <version>0.1-SNAPSHOT</version>
+    <version>0.1-BETA</version>
     <packaging>hpi</packaging>
 
     <name>Heroku Plugin for Jenkins</name>
