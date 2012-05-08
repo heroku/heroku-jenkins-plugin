@@ -9,7 +9,7 @@ Installing
 
 This plugin is not yet in the Jenkins plugin directory and must be installed manually:
 
-1. Download the latest version from the [downloads](https://github.com/heroku/heroku-jenkins-plugin/downloads) tab.
+1. Download the latest version from the [downloads](https://github.com/heroku/heroku-jenkins-plugin/downloads) tab
 2. In your Jenkins instance, go to Manage Jenkins | Manage Plugins | Advanced | Upload Plugin
 3. Choose the file you downloaded and click upload
 4. Restart Jenkins
@@ -57,5 +57,9 @@ Building from Source
      `git clone git@github.com:heroku/heroku-jenkins-plugin.git`
 
      `mvn clean package -DskipTests`
+
+     or with tests:
+
+     `mvn clean package -Dheroku.apiKey="<test user api key>" -Dheroku.appName="<test app>"`
 
 4. This will create a `*.hpi` file in the `target` directory. Install this in Jenkins as expained above.
