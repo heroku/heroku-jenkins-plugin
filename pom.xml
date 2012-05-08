@@ -15,6 +15,23 @@
 
     <name>Heroku Plugin for Jenkins</name>
 
+    <url>https://github.com/heroku/heroku-jenkins-plugin/blob/master/README.md</url>
+
+    <scm>
+        <connection>scm:git:ssh://github.com/heroku/heroku-jenkins-plugin.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com/heroku/heroku-jenkins-plugin.git</developerConnection>
+        <url>https://github.com/heroku/heroku-jenkins-plugin</url>
+    </scm>
+
+    <developers>
+        <developer>
+            <id>ryanbrainard</id>
+            <name>Ryan Brainard</name>
+            <organization>Heroku</organization>
+            <organizationUrl>http://heroku.com</organizationUrl>
+        </developer>
+    </developers>
+
     <properties>
         <heroku-jenkins-plugin.version>${project.version}</heroku-jenkins-plugin.version>
         <com.heroku.api.version>0.8-SNAPSHOT</com.heroku.api.version>
