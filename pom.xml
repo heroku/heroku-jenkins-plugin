@@ -9,7 +9,7 @@
 
     <groupId>com.heroku</groupId>
     <artifactId>heroku-jenkins-plugin</artifactId>
-    <version>0.2-BETA</version>
+    <version>0.3-BETA-SNAPSHOT</version>
     <packaging>hpi</packaging>
 
     <name>Heroku Plugin for Jenkins</name>
