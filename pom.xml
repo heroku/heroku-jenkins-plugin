@@ -15,7 +15,7 @@
 
     <name>Heroku Plugin for Jenkins</name>
 
-    <url>https://github.com/heroku/heroku-jenkins-plugin/blob/master/README.md</url>
+    <url>https://wiki.jenkins-ci.org/display/JENKINS/Heroku+Plugin</url>
 
     <scm>
         <connection>scm:git:ssh://github.com/heroku/heroku-jenkins-plugin.git</connection>
