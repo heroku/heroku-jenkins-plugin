@@ -7,12 +7,9 @@ Currently, the only exposed functionality is WAR deployment, which can be used t
 Installing
 ----------
 
-This plugin is not yet in the Jenkins plugin directory and must be installed manually:
-
-1. Download the latest version from the [downloads](https://github.com/heroku/heroku-jenkins-plugin/downloads) tab
-2. In your Jenkins instance, go to Manage Jenkins | Manage Plugins | Advanced | Upload Plugin
-3. Choose the file you downloaded and click upload
-4. Restart Jenkins
+This plugin is available in the Jenkins plugin manager. 
+To install in Jenkins, go to Manage Jenkins | Manage Plugins | Available | Heroku Plugin for Jenkins | Install. 
+You must restart Jenkins to complete the installation.
 
 Configuration
 -------------
@@ -39,8 +36,8 @@ After the WAR file is created, add the `Heroku: Deploy WAR Artifact` build step 
 
 When the build runs, the WAR file will be uploaded and deployed to Heroku.
 
-Building from Source
---------------------
+Building & Installing from Source
+---------------------------------
 
 1. Follow instructions on [setting up your environment](https://wiki.jenkins-ci.org/display/JENKINS/Plugin+tutorial#Plugintutorial-SettingUpEnvironment)
    from Jenkins
@@ -62,4 +59,10 @@ Building from Source
 
      `mvn clean package -Dheroku.apiKey="<test user api key>" -Dheroku.appName="<test app>"`
 
-4. This will create a `*.hpi` file in the `target` directory. Install this in Jenkins as expained above.
+4. This will create a `*.hpi` file in the `target` directory. 
+
+5. On your Jenkins instance, go to Manage Jenkins | Manage Plugins | Advanced | Upload Plugin.
+
+6. Choose the generated `*.hpi` file and click upload.
+
+7. Restart Jenkins.
