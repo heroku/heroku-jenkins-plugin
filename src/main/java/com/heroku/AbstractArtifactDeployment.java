@@ -16,6 +16,7 @@ import hudson.util.FormValidation;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -35,40 +36,15 @@ public abstract class AbstractArtifactDeployment extends AbstractHerokuBuildStep
     public final boolean perform(final AbstractBuild build, final Launcher launcher, final BuildListener listener, final HerokuAPI api, final App app) {
         listener.getLogger().println("Preparing to deploy " + getDescriptor().getPipelineDisplayName() + " to " + app.getName());
 
-        final boolean result;
         try {
-            result = build.getWorkspace().act(new FilePath.FileCallable<Boolean>() {
-                public Boolean invoke(File workspace, VirtualChannel channel) throws IOException, InterruptedException {
-                    final DirectToHerokuClient client = new DirectToHerokuClient.Builder()
-                            .setApiKey(getEffectiveApiKey())
-                            .setConsumersUserAgent(new JenkinsUserAgentValueProvider().getLocalUserAgent())
-                            .build();
-
-                    final Map<String, File> artifacts = new HashMap<String, File>(artifactPaths.size());
-                    for (Map.Entry<String, String> artifactPath : artifactPaths.entrySet()) {
-                        listener.getLogger().println("Adding " + artifactPath.getKey() + " => " + artifactPath.getValue());
-                        artifacts.put(artifactPath.getKey(), new File(workspace + File.separator + artifactPath.getValue()));
-                    }
-
-                    try {
-                        client.verify(getDescriptor().getPipelineName(), app.getName(), artifacts);
-                    } catch (VerificationException e) {
-                        for (String err : e.getMessages()) {
-                            listener.error(err);
-                        }
-                        return false;
-                    }
-
-                    listener.getLogger().println("Deploying...");
-                    final Map<String, String> deployResults = client.deploy(getDescriptor().getPipelineName(), app.getName(), artifacts);
-                    for (Map.Entry<String, String> result : deployResults.entrySet()) {
-                        listener.getLogger().println(result.getKey() + ":" + result.getValue());
-                    }
-
-                    listener.getLogger().println("Deployment successful: " + app.getWebUrl());
-                    return true;
-                }
-            });
+            return build.getWorkspace().act(new RemoteCallable(
+                    listener,
+                    getEffectiveApiKey(),
+                    app.getName(),
+                    app.getWebUrl(),
+                    new JenkinsUserAgentValueProvider().getLocalUserAgent(),
+                    getDescriptor().getPipelineName(),
+                    artifactPaths));
         } catch (IOException e) {
             listener.error(e.getMessage());
             e.printStackTrace(listener.getLogger());
@@ -78,14 +54,69 @@ public abstract class AbstractArtifactDeployment extends AbstractHerokuBuildStep
             e.printStackTrace(listener.getLogger());
             return false;
         }
-
-        return result;
     }
 
     @Override
     public AbstractArtifactDeploymentDescriptor getDescriptor() {
         return (AbstractArtifactDeploymentDescriptor) super.getDescriptor();
     }
+
+    /**
+     * A serializable, immutable payload for the deployment task.
+     * Separated from containing class and environment to allow it to be run on remote slaves without trying to serialize the world.
+     */
+    public static class RemoteCallable implements FilePath.FileCallable<Boolean>, Serializable {
+
+        private final BuildListener listener;
+        private final String apiKey;
+        private final String appName;
+        private final String appWelUrl;
+        private final String userAgent;
+        private final String pipelineName;
+        private final Map<String, String> artifactPaths;
+
+        RemoteCallable(BuildListener listener, String apiKey, String appName, String appWelUrl, String userAgent, String pipelineName, Map<String, String> artifactPaths) {
+            this.listener = listener;
+            this.apiKey = apiKey;
+            this.appName = appName;
+            this.appWelUrl = appWelUrl;
+            this.pipelineName = pipelineName;
+            this.userAgent = userAgent;
+            this.artifactPaths = artifactPaths;
+        }
+
+        public Boolean invoke(File workspace, VirtualChannel channel) throws IOException, InterruptedException {
+            final DirectToHerokuClient client = new DirectToHerokuClient.Builder()
+                    .setApiKey(apiKey)
+                    .setConsumersUserAgent(userAgent)
+                    .build();
+
+            final Map<String, File> artifacts = new HashMap<String, File>(artifactPaths.size());
+            for (Map.Entry<String, String> artifactPath : artifactPaths.entrySet()) {
+                listener.getLogger().println("Adding " + artifactPath.getKey() + " => " + artifactPath.getValue());
+                artifacts.put(artifactPath.getKey(), new File(workspace + File.separator + artifactPath.getValue()));
+            }
+
+            try {
+                client.verify(pipelineName, appName, artifacts);
+            } catch (VerificationException e) {
+                for (String err : e.getMessages()) {
+                    listener.error(err);
+                }
+                return false;
+            }
+
+            listener.getLogger().println("Deploying...");
+            final Map<String, String> deployResults = client.deploy(pipelineName, appName, artifacts);
+            for (Map.Entry<String, String> result : deployResults.entrySet()) {
+                listener.getLogger().println(result.getKey() + ":" + result.getValue());
+            }
+
+            listener.getLogger().println("Deployment successful: " + appWelUrl);
+            return true;
+        }
+    }
+
 
     public static abstract class AbstractArtifactDeploymentDescriptor extends AbstractHerokuBuildStepDescriptor {
 
