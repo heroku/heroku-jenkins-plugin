@@ -71,9 +71,11 @@ public abstract class AbstractArtifactDeployment extends AbstractHerokuBuildStep
             });
         } catch (IOException e) {
             listener.error(e.getMessage());
+            e.printStackTrace(listener.getLogger());
             return false;
         } catch (InterruptedException e) {
             listener.error(e.getMessage());
+            e.printStackTrace(listener.getLogger());
             return false;
         }
 
