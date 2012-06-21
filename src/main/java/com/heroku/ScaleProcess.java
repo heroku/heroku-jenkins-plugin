@@ -42,6 +42,14 @@ public class ScaleProcess extends AbstractHerokuBuildStep {
         return super.getApiKey();
     }
 
+    public String getProcessType() {
+        return processType;
+    }
+
+    public int getQuantity() {
+        return quantity;
+    }
+
     @Override
     protected boolean perform(AbstractBuild build, Launcher launcher, BuildListener listener, HerokuAPI api, App app) throws IOException, InterruptedException {
         listener.getLogger().print("Scaling [" + processType + "] to " + quantity + "...");
