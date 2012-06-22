@@ -38,13 +38,13 @@ public class WorkspaceDeployment extends AbstractArtifactDeployment {
         this.globExcludes = globExcludes;
     }
 
-    // Overridding and delegating to parent because Jelly only looks at concrete class when rendering views
+    // Overriding and delegating to parent because Jelly only looks at concrete class when rendering views
     @Override
     public String getAppName() {
         return super.getAppName();
     }
 
-    // Overridding and delegating to parent because Jelly only looks at concrete class when rendering views
+    // Overriding and delegating to parent because Jelly only looks at concrete class when rendering views
     @Override
     public String getApiKey() {
         return super.getApiKey();
@@ -66,6 +66,14 @@ public class WorkspaceDeployment extends AbstractArtifactDeployment {
     public boolean perform(AbstractBuild build, Launcher launcher, BuildListener listener, HerokuAPI api, App app) {
         try {
             listener.getLogger().println("Bundling workspace for deployment");
+
+            if (!build.getWorkspace().child(artifactPaths.get(PROCFILE_PATH)).exists()) {
+                listener.error("Profile not found in workspace. \n" +
+                        "Location of Procfile can be specified in advanced configuration build step '" + getDescriptor().getDisplayName() + "'.\n" +
+                        "For information on Procfile, see Heroku Dev Center: https://devcenter.heroku.com/articles/procfile\n");
+                return false;
+            }
+
             build.getWorkspace().act(RemoteWorkspaceArchiveCreation());
 
             return super.perform(build, launcher, listener, api, app);

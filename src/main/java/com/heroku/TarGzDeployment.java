@@ -20,13 +20,13 @@ public class TarGzDeployment extends AbstractArtifactDeployment {
         super(apiKey, appName, ImmutableMap.of(TARGZ_PATH, targzPath, PROCFILE_PATH, procfilePath));
     }
 
-    // Overridding and delegating to parent because Jelly only looks at concrete class when rendering views
+    // Overriding and delegating to parent because Jelly only looks at concrete class when rendering views
     @Override
     public String getAppName() {
         return super.getAppName();
     }
 
-    // Overridding and delegating to parent because Jelly only looks at concrete class when rendering views
+    // Overriding and delegating to parent because Jelly only looks at concrete class when rendering views
     @Override
     public String getApiKey() {
         return super.getApiKey();
