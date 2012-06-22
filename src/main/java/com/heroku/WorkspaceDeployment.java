@@ -8,18 +8,15 @@ import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
-import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.util.DirScanner;
-import hudson.util.FormValidation;
 import hudson.util.io.ArchiverFactory;
-import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.QueryParameter;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.DecimalFormat;
 import java.util.Map;
 
 /**
@@ -27,12 +24,16 @@ import java.util.Map;
  */
 public class WorkspaceDeployment extends AbstractHerokuBuildStep {
 
-    private final String subdir;
+    private final String globIncludes;
+    private final String globExcludes;
+    private final String procfilePath;
 
     @DataBoundConstructor
-    public WorkspaceDeployment(String apiKey, String appName, String subdir) {
+    public WorkspaceDeployment(String apiKey, String appName, String globIncludes, String globExcludes, String procfilePath) {
         super(apiKey, appName);
-        this.subdir = subdir == null ? "" : subdir;
+        this.globIncludes = globIncludes;
+        this.globExcludes = globExcludes;
+        this.procfilePath = procfilePath;
     }
 
     // Overridding and delegating to parent because Jelly only looks at concrete class when rendering views
@@ -47,8 +48,16 @@ public class WorkspaceDeployment extends AbstractHerokuBuildStep {
         return super.getApiKey();
     }
 
-    public String getSubdir() {
-        return subdir;
+    public String getGlobIncludes() {
+        return globIncludes;
+    }
+
+    public String getGlobExcludes() {
+        return globExcludes;
+    }
+
+    public String getProcfilePath() {
+        return procfilePath;
     }
 
     @Override
@@ -57,11 +66,12 @@ public class WorkspaceDeployment extends AbstractHerokuBuildStep {
         File tempProcfile = null;
         try {
             listener.getLogger().print("Fetching Procfile...");
+            listener.getLogger().flush();
             FileOutputStream tempProcfileStream = null;
             try {
-                tempProcfile = File.createTempFile(build.getProject().getName() + Integer.toString(build.getNumber()), ".tar.gz");
+                tempProcfile = File.createTempFile(build.getProject().getName() + Integer.toString(build.getNumber()), ".procfile");
                 tempProcfileStream = new FileOutputStream(tempProcfile);
-                final FilePath procfile = build.getWorkspace().child(subdir).child("Procfile");
+                final FilePath procfile = build.getWorkspace().child(procfilePath);
                 if (!procfile.exists()) {
                     listener.error("Procfile not found");
                     return false;
@@ -72,16 +82,18 @@ public class WorkspaceDeployment extends AbstractHerokuBuildStep {
             }
             listener.getLogger().println("done");
 
-            listener.getLogger().print("Bundling workspace dir " + subdir + "...");
+            listener.getLogger().print("Bundling workspace...");
+            listener.getLogger().flush();
             FileOutputStream tempTarStream = null;
             try {
-                tempTarFile = File.createTempFile(build.getProject().getName(), Integer.toString(build.getNumber()));
+                tempTarFile = File.createTempFile(build.getProject().getName() + Integer.toString(build.getNumber()), ".tar.gz");
                 tempTarStream = new FileOutputStream(tempTarFile);
-                build.getWorkspace().child(subdir).archive(ArchiverFactory.TARGZ, tempTarStream, new DirScanner.Glob("**/*", null));
+                build.getWorkspace().archive(ArchiverFactory.TARGZ, tempTarStream, new DirScanner.Glob(globIncludes, globExcludes));
             } finally {
                 if (tempTarStream != null) tempTarStream.close();
             }
-            listener.getLogger().println("done");
+            final String tempTarFileSize = new DecimalFormat("#.##").format(((double) tempTarFile.length()) / (1024 * 1024));
+            listener.getLogger().println("done | " + tempTarFileSize + " MB");
 
             listener.getLogger().print("Deploying...");
             listener.getLogger().flush();
@@ -111,8 +123,7 @@ public class WorkspaceDeployment extends AbstractHerokuBuildStep {
             return "Heroku: Deploy Workspace";
         }
 
-        public FormValidation doCheckSubdir(@AncestorInPath AbstractProject project, @QueryParameter String value) throws IOException {
-            return FilePath.validateFileMask(project.getSomeWorkspace(), value);
-        }
+        // TODO: validation
+
     }
 }

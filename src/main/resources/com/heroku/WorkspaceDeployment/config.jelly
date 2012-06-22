@@ -8,7 +8,17 @@
         <f:textbox/>
     </f:entry>
 
-    <f:entry title="Sub Directory" field="subdir">
-        <f:textbox/>
-    </f:entry>
+    <f:advanced>
+        <f:entry title="Includes" field="globIncludes">
+            <f:textbox default="**/*"/>
+        </f:entry>
+
+        <f:entry title="Excludes" field="globExcludes">
+            <f:textbox/>
+        </f:entry>
+
+        <f:entry title="Procfile Path" field="procfilePath">
+            <f:textbox default="Procfile"/>
+        </f:entry>
+    </f:advanced>
 </j:jelly>
