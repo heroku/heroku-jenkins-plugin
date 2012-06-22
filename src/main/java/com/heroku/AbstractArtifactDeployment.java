@@ -41,8 +41,6 @@ public abstract class AbstractArtifactDeployment extends AbstractHerokuBuildStep
 
     @Override
     public boolean perform(final AbstractBuild build, final Launcher launcher, final BuildListener listener, final HerokuAPI api, final App app) {
-        listener.getLogger().println("Preparing to deploy " + getDescriptor().getPipelineDisplayName() + " to " + app.getName());
-
         try {
             return build.getWorkspace().act(new RemoteCallable(
                     listener,
@@ -51,6 +49,7 @@ public abstract class AbstractArtifactDeployment extends AbstractHerokuBuildStep
                     app.getWebUrl(),
                     new JenkinsUserAgentValueProvider().getLocalUserAgent(),
                     getDescriptor().getPipelineName(),
+                    getDescriptor().getPipelineDisplayName(),
                     artifactPaths));
         } catch (IOException e) {
             listener.error(e.getMessage());
@@ -80,19 +79,23 @@ public abstract class AbstractArtifactDeployment extends AbstractHerokuBuildStep
         private final String appWebUrl;
         private final String userAgent;
         private final String pipelineName;
+        private final String pipelineDisplayName;
         private final Map<String, String> artifactPaths;
 
-        RemoteCallable(BuildListener listener, String apiKey, String appName, String appWebUrl, String userAgent, String pipelineName, Map<String, String> artifactPaths) {
+        RemoteCallable(BuildListener listener, String apiKey, String appName, String appWebUrl, String userAgent, String pipelineName, String pipelineDisplayName, Map<String, String> artifactPaths) {
             this.listener = listener;
             this.apiKey = apiKey;
             this.appName = appName;
             this.appWebUrl = appWebUrl;
             this.pipelineName = pipelineName;
             this.userAgent = userAgent;
+            this.pipelineDisplayName = pipelineDisplayName;
             this.artifactPaths = artifactPaths;
         }
 
         public Boolean invoke(File workspace, VirtualChannel channel) throws IOException, InterruptedException {
+            listener.getLogger().println("Preparing to deploy " + pipelineDisplayName + " to app " + appName);
+
             final DirectToHerokuClient client = new DirectToHerokuClient.Builder()
                     .setApiKey(apiKey)
                     .setConsumersUserAgent(userAgent)
@@ -100,7 +103,6 @@ public abstract class AbstractArtifactDeployment extends AbstractHerokuBuildStep
 
             final Map<String, File> artifacts = new HashMap<String, File>(artifactPaths.size());
             for (Map.Entry<String, String> artifactPath : artifactPaths.entrySet()) {
-                listener.getLogger().println("Adding " + artifactPath.getKey() + " => " + artifactPath.getValue());
                 artifacts.put(artifactPath.getKey(), new File(workspace + File.separator + artifactPath.getValue()));
             }
 
@@ -115,11 +117,8 @@ public abstract class AbstractArtifactDeployment extends AbstractHerokuBuildStep
 
             listener.getLogger().println("Deploying...");
             final Map<String, String> deployResults = client.deploy(pipelineName, appName, artifacts);
-            for (Map.Entry<String, String> result : deployResults.entrySet()) {
-                listener.getLogger().println(result.getKey() + ":" + result.getValue());
-            }
+            listener.getLogger().println("Released " + deployResults.get("release") + " to " + appWebUrl);
 
-            listener.getLogger().println("Deployment successful: " + appWebUrl);
             return true;
         }
     }

@@ -73,11 +73,10 @@ abstract class AbstractHerokuBuildStep extends Builder {
 
         try {
             app = api.getApp(appName);
-            listener.getLogger().println("Found existing app: " + appName);
         } catch (RequestFailedException appListingException) {
             try {
                 app = api.createApp(new App().named(appName).on(Heroku.Stack.Cedar));
-                listener.getLogger().println("Created new app: " + appName);
+                listener.getLogger().println("Created new app " + appName);
             } catch (RuntimeException appCreationException) {
                 listener.error("Could not create app " + appName + "\n" + appCreationException.getMessage());
                 throw appCreationException;

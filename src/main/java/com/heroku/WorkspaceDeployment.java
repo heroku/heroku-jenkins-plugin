@@ -21,7 +21,6 @@ import org.kohsuke.stapler.QueryParameter;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.text.DecimalFormat;
 import java.util.UUID;
 
 /**
@@ -66,11 +65,8 @@ public class WorkspaceDeployment extends AbstractArtifactDeployment {
     @Override
     public boolean perform(AbstractBuild build, Launcher launcher, BuildListener listener, HerokuAPI api, App app) {
         try {
-            listener.getLogger().print("Bundling workspace...");
-            listener.getLogger().flush();
-            final File archiveFile = build.getWorkspace().act(RemoteWorkspaceArchiveCreation());
-            final String tempTarFileSize = new DecimalFormat("#.##").format(((double) archiveFile.length()) / (1024 * 1024));
-            listener.getLogger().println("done | " + tempTarFileSize + " MB");
+            listener.getLogger().println("Bundling workspace for deployment");
+            build.getWorkspace().act(RemoteWorkspaceArchiveCreation());
 
             return super.perform(build, launcher, listener, api, app);
         } catch (IOException e) {
@@ -105,12 +101,13 @@ public class WorkspaceDeployment extends AbstractArtifactDeployment {
                     File archiveFile = new File(workspace.getAbsolutePath() + File.separator + artifactPaths.get(TARGZ_PATH));
                     archiveStream = new FileOutputStream(archiveFile);
 
-                    final Archiver a = ArchiverFactory.TARGZ.create(archiveStream);
+                    Archiver archiver = null;
                     try {
+                        archiver = ArchiverFactory.TARGZ.create(archiveStream);
                         final String globExcludesWithSelfExclude = globExcludes + "," + artifactPaths.get(TARGZ_PATH);
-                        new DirScanner.Glob(globIncludes, globExcludesWithSelfExclude).scan(workspace, a);
+                        new DirScanner.Glob(globIncludes, globExcludesWithSelfExclude).scan(workspace, archiver);
                     } finally {
-                        a.close();
+                        if (archiver != null) archiver.close();
                     }
                     return archiveFile;
                 } finally {
@@ -126,6 +123,11 @@ public class WorkspaceDeployment extends AbstractArtifactDeployment {
         @Override
         public String getPipelineName() {
             return TARGZ_PIPELINE;
+        }
+
+        @Override
+        protected String getPipelineDisplayName() {
+            return "workspace";
         }
 
         @Override
