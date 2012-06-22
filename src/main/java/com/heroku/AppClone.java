@@ -78,6 +78,11 @@ public class AppClone extends AbstractHerokuBuildStep {
             return "Heroku: Create App from Template";
         }
 
+        @Override
+        public boolean isApplicable(Class<? extends AbstractProject> jobType) {
+            return false;
+        }
+
         public FormValidation doCheckTemplateAppName(@AncestorInPath AbstractProject project, @QueryParameter String templateAppName) throws IOException {
             return FormValidation.validateRequired(templateAppName);
         }

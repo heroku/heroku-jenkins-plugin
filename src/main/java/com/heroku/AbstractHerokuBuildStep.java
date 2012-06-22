@@ -109,7 +109,7 @@ abstract class AbstractHerokuBuildStep extends Builder {
 
         @Override
         public boolean isApplicable(Class<? extends AbstractProject> jobType) {
-            return HerokuPlugin.get().isEnabled(getClass().getEnclosingClass().getName());
+            return true;
         }
 
         public FormValidation doCheckApiKey(@QueryParameter String apiKey) {

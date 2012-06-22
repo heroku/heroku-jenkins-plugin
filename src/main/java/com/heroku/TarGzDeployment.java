@@ -48,6 +48,11 @@ public class TarGzDeployment extends AbstractArtifactDeployment {
             return TARGZ_PIPELINE;
         }
 
+        @Override
+        public boolean isApplicable(Class<? extends AbstractProject> jobType) {
+            return false;
+        }
+
         public FormValidation doCheckTargzPath(@AncestorInPath AbstractProject project, @QueryParameter String value) throws IOException {
             return checkAnyArtifactPath(project, value, ".targz", "tar.gz");
         }

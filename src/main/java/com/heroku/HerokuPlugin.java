@@ -75,16 +75,4 @@ public final class HerokuPlugin extends Plugin {
     String getPluginVersion() {
         return projectProperties.get("heroku-jenkins-plugin.version");
     }
-
-    /**
-     * Checks project properties to see if a given attribute is enable.
-     *
-     * @param enableable String value of something that can have .enabled appended in property file. Usually a build step class name.
-     * @return true if enabled
-     */
-    public boolean isEnabled(String enableable) {
-        final String enabledKey = enableable + ".enabled";
-        return projectProperties.containsKey(enabledKey) && Boolean.valueOf(projectProperties.get(enabledKey));
-    }
-
 }
