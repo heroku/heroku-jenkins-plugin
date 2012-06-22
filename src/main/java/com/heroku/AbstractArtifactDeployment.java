@@ -70,16 +70,16 @@ public abstract class AbstractArtifactDeployment extends AbstractHerokuBuildStep
         private final BuildListener listener;
         private final String apiKey;
         private final String appName;
-        private final String appWelUrl;
+        private final String appWebUrl;
         private final String userAgent;
         private final String pipelineName;
         private final Map<String, String> artifactPaths;
 
-        RemoteCallable(BuildListener listener, String apiKey, String appName, String appWelUrl, String userAgent, String pipelineName, Map<String, String> artifactPaths) {
+        RemoteCallable(BuildListener listener, String apiKey, String appName, String appWebUrl, String userAgent, String pipelineName, Map<String, String> artifactPaths) {
             this.listener = listener;
             this.apiKey = apiKey;
             this.appName = appName;
-            this.appWelUrl = appWelUrl;
+            this.appWebUrl = appWebUrl;
             this.pipelineName = pipelineName;
             this.userAgent = userAgent;
             this.artifactPaths = artifactPaths;
@@ -112,7 +112,7 @@ public abstract class AbstractArtifactDeployment extends AbstractHerokuBuildStep
                 listener.getLogger().println(result.getKey() + ":" + result.getValue());
             }
 
-            listener.getLogger().println("Deployment successful: " + appWelUrl);
+            listener.getLogger().println("Deployment successful: " + appWebUrl);
             return true;
         }
     }
