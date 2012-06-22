@@ -10,8 +10,6 @@ import org.kohsuke.stapler.QueryParameter;
 
 import java.io.IOException;
 
-import static com.heroku.WarDeployment.WarDeploymentDescriptor.WAR_PATH;
-
 /**
  * @author Ryan Brainard
  */
@@ -40,9 +38,6 @@ public class WarDeployment extends AbstractArtifactDeployment {
 
     @Extension
     public static class WarDeploymentDescriptor extends AbstractArtifactDeployment.AbstractArtifactDeploymentDescriptor {
-
-        static final String WAR_PIPELINE = "war";
-        static final String WAR_PATH = "war";
 
         @Override
         public String getPipelineName() {

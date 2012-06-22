@@ -25,6 +25,13 @@ import java.util.Map;
  */
 public abstract class AbstractArtifactDeployment extends AbstractHerokuBuildStep {
 
+    protected static final String TARGZ_PIPELINE = "targz";
+    protected static final String WAR_PIPELINE = "war";
+
+    protected static final String WAR_PATH = "war";
+    protected static final String TARGZ_PATH = "targz";
+    protected static final String PROCFILE_PATH = "procfile";
+
     protected final Map<String, String> artifactPaths;
 
     protected AbstractArtifactDeployment(String apiKey, String appName, Map<String, String> artifactPaths) {
@@ -33,7 +40,7 @@ public abstract class AbstractArtifactDeployment extends AbstractHerokuBuildStep
     }
 
     @Override
-    public final boolean perform(final AbstractBuild build, final Launcher launcher, final BuildListener listener, final HerokuAPI api, final App app) {
+    public boolean perform(final AbstractBuild build, final Launcher launcher, final BuildListener listener, final HerokuAPI api, final App app) {
         listener.getLogger().println("Preparing to deploy " + getDescriptor().getPipelineDisplayName() + " to " + app.getName());
 
         try {

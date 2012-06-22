@@ -3,37 +3,40 @@ package com.heroku;
 import com.google.common.collect.ImmutableMap;
 import com.heroku.api.App;
 import com.heroku.api.HerokuAPI;
-import com.herokuapp.directto.client.DirectToHerokuClient;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
+import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
+import hudson.remoting.VirtualChannel;
 import hudson.util.DirScanner;
+import hudson.util.FormValidation;
+import hudson.util.io.Archiver;
 import hudson.util.io.ArchiverFactory;
+import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.QueryParameter;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.DecimalFormat;
-import java.util.Map;
+import java.util.UUID;
 
 /**
  * @author Ryan Brainard
  */
-public class WorkspaceDeployment extends AbstractHerokuBuildStep {
+public class WorkspaceDeployment extends AbstractArtifactDeployment {
 
     private final String globIncludes;
     private final String globExcludes;
-    private final String procfilePath;
 
     @DataBoundConstructor
     public WorkspaceDeployment(String apiKey, String appName, String globIncludes, String globExcludes, String procfilePath) {
-        super(apiKey, appName);
+        super(apiKey, appName, ImmutableMap.of("targz", UUID.randomUUID().toString() + ".tar.gz", PROCFILE_PATH, procfilePath));
         this.globIncludes = globIncludes;
         this.globExcludes = globExcludes;
-        this.procfilePath = procfilePath;
     }
 
     // Overridding and delegating to parent because Jelly only looks at concrete class when rendering views
@@ -57,73 +60,90 @@ public class WorkspaceDeployment extends AbstractHerokuBuildStep {
     }
 
     public String getProcfilePath() {
-        return procfilePath;
+        return artifactPaths.get(PROCFILE_PATH);
     }
 
     @Override
-    protected boolean perform(AbstractBuild build, Launcher launcher, BuildListener listener, HerokuAPI api, App app) throws IOException, InterruptedException {
-        File tempTarFile = null;
-        File tempProcfile = null;
+    public boolean perform(AbstractBuild build, Launcher launcher, BuildListener listener, HerokuAPI api, App app) {
         try {
-            listener.getLogger().print("Fetching Procfile...");
-            listener.getLogger().flush();
-            FileOutputStream tempProcfileStream = null;
-            try {
-                tempProcfile = File.createTempFile(build.getProject().getName() + Integer.toString(build.getNumber()), ".procfile");
-                tempProcfileStream = new FileOutputStream(tempProcfile);
-                final FilePath procfile = build.getWorkspace().child(procfilePath);
-                if (!procfile.exists()) {
-                    listener.error("Procfile not found");
-                    return false;
-                }
-                procfile.copyTo(tempProcfileStream);
-            } finally {
-                if (tempProcfileStream != null) tempProcfileStream.close();
-            }
-            listener.getLogger().println("done");
-
             listener.getLogger().print("Bundling workspace...");
             listener.getLogger().flush();
-            FileOutputStream tempTarStream = null;
-            try {
-                tempTarFile = File.createTempFile(build.getProject().getName() + Integer.toString(build.getNumber()), ".tar.gz");
-                tempTarStream = new FileOutputStream(tempTarFile);
-                build.getWorkspace().archive(ArchiverFactory.TARGZ, tempTarStream, new DirScanner.Glob(globIncludes, globExcludes));
-            } finally {
-                if (tempTarStream != null) tempTarStream.close();
-            }
-            final String tempTarFileSize = new DecimalFormat("#.##").format(((double) tempTarFile.length()) / (1024 * 1024));
+            final File archiveFile = build.getWorkspace().act(RemoteWorkspaceArchiveCreation());
+            final String tempTarFileSize = new DecimalFormat("#.##").format(((double) archiveFile.length()) / (1024 * 1024));
             listener.getLogger().println("done | " + tempTarFileSize + " MB");
 
-            listener.getLogger().print("Deploying...");
-            listener.getLogger().flush();
-            final Map<String, File> payload = ImmutableMap.of("targz", tempTarFile,
-                    "procfile", tempProcfile);
-
-            new DirectToHerokuClient.Builder()
-                    .setApiKey(getEffectiveApiKey())
-                    .setConsumersUserAgent(new JenkinsUserAgentValueProvider().getLocalUserAgent())
-                    .build().deploy("targz", app.getName(), payload);
-
-            listener.getLogger().println("done");
-            listener.getLogger().println(app.getWebUrl());
+            return super.perform(build, launcher, listener, api, app);
+        } catch (IOException e) {
+            listener.error(e.getMessage());
+            e.printStackTrace(listener.getLogger());
+            return false;
+        } catch (InterruptedException e) {
+            listener.error(e.getMessage());
+            e.printStackTrace(listener.getLogger());
+            return false;
         } finally {
-            if (tempTarFile != null) tempTarFile.delete();
-            if (tempProcfile != null) tempProcfile.delete();
+            try {
+                build.getWorkspace().child(artifactPaths.get(TARGZ_PATH)).delete();
+            } catch (IOException e) {
+                listener.error(e.getMessage());
+                e.printStackTrace(listener.getLogger());
+            } catch (InterruptedException e) {
+                listener.error(e.getMessage());
+                e.printStackTrace(listener.getLogger());
+            }
         }
+    }
 
-        return true;
+    /**
+     * Creates an archive of the workspace in the workspace
+     */
+    private FilePath.FileCallable<File> RemoteWorkspaceArchiveCreation() {
+        return new FilePath.FileCallable<File>() {
+            public File invoke(File workspace, VirtualChannel channel) throws IOException, InterruptedException {
+                FileOutputStream archiveStream = null;
+                try {
+                    File archiveFile = new File(workspace.getAbsolutePath() + File.separator + artifactPaths.get(TARGZ_PATH));
+                    archiveStream = new FileOutputStream(archiveFile);
+
+                    final Archiver a = ArchiverFactory.TARGZ.create(archiveStream);
+                    try {
+                        final String globExcludesWithSelfExclude = globExcludes + "," + artifactPaths.get(TARGZ_PATH);
+                        new DirScanner.Glob(globIncludes, globExcludesWithSelfExclude).scan(workspace, a);
+                    } finally {
+                        a.close();
+                    }
+                    return archiveFile;
+                } finally {
+                    if (archiveStream != null) archiveStream.close();
+                }
+            }
+        };
     }
 
     @Extension
-    public static class WorkspaceDeploymentDescriptor extends AbstractHerokuBuildStepDescriptor {
+    public static class WorkspaceDeploymentDescriptor extends AbstractArtifactDeployment.AbstractArtifactDeploymentDescriptor {
+
+        @Override
+        public String getPipelineName() {
+            return TARGZ_PIPELINE;
+        }
 
         @Override
         public String getDisplayName() {
             return "Heroku: Deploy Workspace";
         }
 
-        // TODO: validation
+        public FormValidation doCheckProcfilePath(@AncestorInPath AbstractProject project, @QueryParameter String value) throws IOException {
+            return checkAnyArtifactPath(project, value, "Procfile");
+        }
+
+        public FormValidation doCheckGlobIncludes(@AncestorInPath AbstractProject project, @QueryParameter String value) throws IOException {
+            return FilePath.validateFileMask(project.getSomeWorkspace(), value);
+        }
+
+        public FormValidation doCheckGlobExcludes(@AncestorInPath AbstractProject project, @QueryParameter String value) throws IOException {
+            return FilePath.validateFileMask(project.getSomeWorkspace(), value);
+        }
 
     }
 }

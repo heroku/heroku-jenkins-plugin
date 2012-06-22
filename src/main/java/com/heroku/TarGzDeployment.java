@@ -10,9 +10,6 @@ import org.kohsuke.stapler.QueryParameter;
 
 import java.io.IOException;
 
-import static com.heroku.TarGzDeployment.TarGzDeploymentDescriptor.PROCFILE_PATH;
-import static com.heroku.TarGzDeployment.TarGzDeploymentDescriptor.TARGZ_PATH;
-
 /**
  * @author Ryan Brainard
  */
@@ -45,10 +42,6 @@ public class TarGzDeployment extends AbstractArtifactDeployment {
 
     @Extension
     public static class TarGzDeploymentDescriptor extends AbstractArtifactDeployment.AbstractArtifactDeploymentDescriptor {
-
-        static final String TARGZ_PIPELINE = "targz";
-        static final String TARGZ_PATH = "targz";
-        static final String PROCFILE_PATH = "procfile";
 
         @Override
         public String getPipelineName() {
