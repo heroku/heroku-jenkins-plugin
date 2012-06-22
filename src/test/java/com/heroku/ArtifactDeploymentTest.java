@@ -28,6 +28,12 @@ public class ArtifactDeploymentTest extends BaseHerokuBuildStepTest {
                     File.createTempFile("test", ".tar.gz"),
                     new File(ClassLoader.getSystemResource("Procfile").getFile())));
 
+            suite.addTest(new ArtifactDeploymentTest(
+                    WorkspaceDeployment.class,
+                    "**/*",
+                    "",
+                    new File(ClassLoader.getSystemResource("Procfile").getFile())));
+
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -35,42 +41,52 @@ public class ArtifactDeploymentTest extends BaseHerokuBuildStepTest {
     }
 
     private Class<? extends AbstractArtifactDeployment> deploymentStepClass;
-    private File[] artifacts;
+    private Object[] additionalArgs;
 
-    public ArtifactDeploymentTest(Class<? extends AbstractArtifactDeployment> deploymentStepClass, File... artifacts) {
+    public ArtifactDeploymentTest(Class<? extends AbstractArtifactDeployment> deploymentStepClass, Object... additionalArgs) {
         setName("test" + deploymentStepClass.getSimpleName());
         this.deploymentStepClass = deploymentStepClass;
-        this.artifacts = artifacts;
+        this.additionalArgs = additionalArgs;
     }
 
     public void runTest() throws Exception {
         assertNotNull("Jelly file should exists", ClassLoader.getSystemResource(deploymentStepClass.getName().replaceAll("\\.", File.separator) + File.separator + "config.jelly"));
 
         final FreeStyleProject project = createFreeStyleProject();
-        project.scheduleBuild2(0).get(); // run build once get create workspace
-        for (File a : artifacts) {
-            new FilePath(a).copyTo(project.getSomeWorkspace().child(a.getName()));
+        project.scheduleBuild2(0).get(); // run empty build once get create workspace
+        for (Object a : additionalArgs) {
+            if (a instanceof File) {
+                new FilePath((File) a).copyTo(project.getSomeWorkspace().child(((File) a).getName()));
+            }
         }
 
         project.getBuildersList().add(createDeploymentBuildStep());
         FreeStyleBuild build = project.scheduleBuild2(0).get();
         String logs = FileUtils.readFileToString(build.getLogFile());
-        assertTrue(logs, logs.contains("Deployment successful"));
+        assertTrue(logs, logs.contains("Released v"));
     }
 
     private AbstractArtifactDeployment createDeploymentBuildStep() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, InstantiationException {
         final int baseArgs = 2;
-        final String[] args = new String[baseArgs + artifacts.length];
+        final Object[] args = new Object[baseArgs + additionalArgs.length];
         args[0] = apiKey;
         args[1] = appName;
-        for (int i = 0, artifactsLength = artifacts.length; i < artifactsLength; i++) {
-            args[baseArgs + i] = artifacts[i].getName();
+        for (int i = 0, artifactsLength = additionalArgs.length; i < artifactsLength; i++) {
+            final Object convertedArg;
+            if (additionalArgs[i] instanceof File) {
+                convertedArg = ((File) additionalArgs[i]).getName();
+            } else {
+                convertedArg = additionalArgs[0];
+            }
+
+            args[baseArgs + i] = convertedArg;
         }
 
         for (Constructor c : deploymentStepClass.getConstructors()) {
-            if (c.getParameterTypes().length == artifacts.length + baseArgs) {
-                for (Class p : c.getParameterTypes()) {
-                    if (!p.equals(String.class)) break;
+            final Class[] parameterTypes = c.getParameterTypes();
+            if (parameterTypes.length == args.length) {
+                for (int i = 0; i < parameterTypes.length; i++) {
+                    if (!parameterTypes[i].isAssignableFrom(args[i].getClass())) break;
                 }
                 return (AbstractArtifactDeployment) c.newInstance(args);
             }
