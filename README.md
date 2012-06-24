@@ -97,3 +97,30 @@ Building & Installing from Source
 6. Choose the generated `*.hpi` file and click upload.
 
 7. Restart Jenkins.
+
+
+Changelog
+=========
+
+Version 0.4 Beta (June 22, 2012)
+-------------------------------
+ - New Build Steps
+   - Workspace Deployment
+   - Scale Process
+   - Run Process
+   - Rollback
+ - Upgrade to heroku-api 0.9
+
+Version 0.3 Beta (June 2, 2012)
+-------------------------------
+ - Support for master-slave setups
+
+Version 0.2 Beta (May 15, 2012)
+-------------------------------
+ - Upgrade to heroku-api 0.8
+ - Upgrade to direct-to-heroku-client 0.4
+ - First release to jenkins-ci.org
+
+Version 0.1 Beta (May 8, 2012)
+------------------------------
+- WAR Deployment
