@@ -51,8 +51,8 @@ public class RunProcess extends AbstractHerokuBuildStep {
         final RunResponse runResponse = api.runAttached(app.getName(), command);
 
         listener.getLogger().println(
-                "Running " + runResponse.getCommand() + ". " +
-                        "State: " + runResponse.getAction() + ". " +
+                "Running " + runResponse.getProc().getCommand() + ". " +
+                        "State: " + runResponse.getProc().getAction() + ". " +
                         "Output:");
 
         InputStream runStream = null;
