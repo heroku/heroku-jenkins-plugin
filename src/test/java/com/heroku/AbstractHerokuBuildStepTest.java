@@ -75,7 +75,7 @@ public class AbstractHerokuBuildStepTest extends BaseHerokuBuildStepTest {
         try {
             assertEquals(newAppName, step.getOrCreateApp(listener, api).getName());
         } finally {
-            api.destroyApp(appName);
+            api.destroyApp(newAppName);
         }
     }
 }

@@ -63,7 +63,7 @@ public class WorkspaceDeployment extends AbstractArtifactDeployment {
     }
 
     @Override
-    public boolean perform(AbstractBuild build, Launcher launcher, BuildListener listener, HerokuAPI api, App app) {
+    public boolean perform(AbstractBuild build, Launcher launcher, BuildListener listener, HerokuAPI api, App app) throws IOException, InterruptedException {
         try {
             listener.getLogger().println("Bundling workspace for deployment");
 
@@ -77,14 +77,6 @@ public class WorkspaceDeployment extends AbstractArtifactDeployment {
             build.getWorkspace().act(RemoteWorkspaceArchiveCreation());
 
             return super.perform(build, launcher, listener, api, app);
-        } catch (IOException e) {
-            listener.error(e.getMessage());
-            e.printStackTrace(listener.getLogger());
-            return false;
-        } catch (InterruptedException e) {
-            listener.error(e.getMessage());
-            e.printStackTrace(listener.getLogger());
-            return false;
         } finally {
             try {
                 build.getWorkspace().child(artifactPaths.get(TARGZ_PATH)).delete();

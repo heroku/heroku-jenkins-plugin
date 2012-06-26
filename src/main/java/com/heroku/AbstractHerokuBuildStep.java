@@ -90,7 +90,13 @@ abstract class AbstractHerokuBuildStep extends Builder {
     public boolean perform(final AbstractBuild build, final Launcher launcher, final BuildListener listener) throws IOException, InterruptedException {
         final HerokuAPI api = new HerokuAPI(getEffectiveApiKey());
         final App app = getOrCreateApp(listener, api);
-        return perform(build, launcher, listener, api, app);
+        try {
+            return perform(build, launcher, listener, api, app);
+        } catch (RequestFailedException e) {
+            listener.error(e.getMessage());
+            e.printStackTrace(listener.getLogger());
+            return false;
+        }
     }
 
     /**

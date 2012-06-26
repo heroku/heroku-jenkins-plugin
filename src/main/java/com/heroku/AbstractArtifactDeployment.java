@@ -40,26 +40,16 @@ public abstract class AbstractArtifactDeployment extends AbstractHerokuBuildStep
     }
 
     @Override
-    public boolean perform(final AbstractBuild build, final Launcher launcher, final BuildListener listener, final HerokuAPI api, final App app) {
-        try {
-            return build.getWorkspace().act(new RemoteCallable(
-                    listener,
-                    getEffectiveApiKey(),
-                    app.getName(),
-                    app.getWebUrl(),
-                    new JenkinsUserAgentValueProvider().getLocalUserAgent(),
-                    getDescriptor().getPipelineName(),
-                    getDescriptor().getPipelineDisplayName(),
-                    artifactPaths));
-        } catch (IOException e) {
-            listener.error(e.getMessage());
-            e.printStackTrace(listener.getLogger());
-            return false;
-        } catch (InterruptedException e) {
-            listener.error(e.getMessage());
-            e.printStackTrace(listener.getLogger());
-            return false;
-        }
+    public boolean perform(final AbstractBuild build, final Launcher launcher, final BuildListener listener, final HerokuAPI api, final App app) throws IOException, InterruptedException {
+        return build.getWorkspace().act(new RemoteCallable(
+                listener,
+                getEffectiveApiKey(),
+                app.getName(),
+                app.getWebUrl(),
+                new JenkinsUserAgentValueProvider().getLocalUserAgent(),
+                getDescriptor().getPipelineName(),
+                getDescriptor().getPipelineDisplayName(),
+                artifactPaths));
     }
 
     @Override
