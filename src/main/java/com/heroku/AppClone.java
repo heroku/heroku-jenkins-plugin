@@ -3,7 +3,6 @@ package com.heroku;
 import com.heroku.api.App;
 import com.heroku.api.Heroku;
 import com.heroku.api.HerokuAPI;
-import com.heroku.api.exception.RequestFailedException;
 import hudson.Extension;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
@@ -52,16 +51,9 @@ public class AppClone extends AbstractHerokuBuildStep {
 
     @Override
     protected boolean perform(AbstractBuild build, Launcher launcher, BuildListener listener, HerokuAPI api, App targetApp) throws IOException, InterruptedException {
-        listener.getLogger().println("Cloning template app " + templateAppName + "...");
-        final App clonedApp = api.cloneApp(templateAppName);
-
-        try {
-            api.renameApp(clonedApp.getName(), targetApp.getName());
-            listener.getLogger().println("Created new app: " + targetApp.getName());
-        } catch (RequestFailedException e) {
-            listener.getLogger().println("Failed to clone with requested app name '" + targetApp.getName() + "'. " +
-                    "Using system generated name '" + clonedApp.getName() + "' instead");
-        }
+        listener.getLogger().println("Cloning template app " + templateAppName + " with name " + targetApp.getName());
+        final App clonedApp = api.cloneApp(templateAppName, targetApp);
+        listener.getLogger().println("Created new app: " + clonedApp.getName());
 
         return true;
     }
