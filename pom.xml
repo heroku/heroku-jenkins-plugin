@@ -34,7 +34,7 @@
 
     <properties>
         <heroku-jenkins-plugin.version>${project.version}</heroku-jenkins-plugin.version>
-        <com.heroku.api.version>0.10</com.heroku.api.version>
+        <com.heroku.api.version>0.11</com.heroku.api.version>
         <jackson.version>1.8.3</jackson.version>
     </properties>
 
