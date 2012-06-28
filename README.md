@@ -67,6 +67,12 @@ Rollback
 The `Rollback` build step [rolls back](https://devcenter.heroku.com/articles/releases#rollback) to the previous release.
 
 
+Maintenance Mode
+----------------
+
+The `Maintenance Mode` build step [toggle maintenance mode](https://devcenter.heroku.com/articles/maintenance-mode) for a given app.
+
+
 Building & Installing from Source
 =================================
 
@@ -101,6 +107,13 @@ Building & Installing from Source
 
 Changelog
 =========
+
+Version 0.5 Beta (June 27, 2012)
+--------------------------------
+ - New Maintenance Mode build step
+ - Upload message during artifact deployment
+ - Upgrade to heroku-api 0.11
+ - Upgrade to direct-to-heroku-client 0.5
 
 Version 0.4 Beta (June 22, 2012)
 -------------------------------
