@@ -63,6 +63,8 @@ public class ArtifactDeploymentTest extends BaseHerokuBuildStepTest {
         project.getBuildersList().add(createDeploymentBuildStep());
         FreeStyleBuild build = project.scheduleBuild2(0).get();
         String logs = FileUtils.readFileToString(build.getLogFile());
+        assertTrue(logs, logs.contains("Uploading..."));
+        assertTrue(logs, logs.contains("Deploying..."));
         assertTrue(logs, logs.contains("Released v"));
     }
 

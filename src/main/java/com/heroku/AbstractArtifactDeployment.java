@@ -3,7 +3,9 @@ package com.heroku;
 import com.google.common.base.Joiner;
 import com.heroku.api.App;
 import com.heroku.api.HerokuAPI;
+import com.herokuapp.directto.client.DeployRequest;
 import com.herokuapp.directto.client.DirectToHerokuClient;
+import com.herokuapp.directto.client.EventSubscription;
 import com.herokuapp.directto.client.VerificationException;
 import hudson.FilePath;
 import hudson.Launcher;
@@ -19,6 +21,11 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+
+import static com.herokuapp.directto.client.EventSubscription.Event;
+import static com.herokuapp.directto.client.EventSubscription.Event.POLL_START;
+import static com.herokuapp.directto.client.EventSubscription.Event.UPLOAD_START;
+import static com.herokuapp.directto.client.EventSubscription.Subscriber;
 
 /**
  * @author Ryan Brainard
@@ -96,8 +103,22 @@ public abstract class AbstractArtifactDeployment extends AbstractHerokuBuildStep
                 artifacts.put(artifactPath.getKey(), new File(workspace + File.separator + artifactPath.getValue()));
             }
 
+            final DeployRequest deployRequest = new DeployRequest(pipelineName, appName, artifacts)
+                    .setEventSubscription(new EventSubscription()
+                            .subscribe(UPLOAD_START, new Subscriber() {
+                                public void handle(Event event) {
+                                    listener.getLogger().println("Uploading...");
+                                }
+                            })
+                            .subscribe(POLL_START, new Subscriber() {
+                                public void handle(Event event) {
+                                    listener.getLogger().println("Deploying...");
+                                }
+                            })
+                    );
+
             try {
-                client.verify(pipelineName, appName, artifacts);
+                client.verify(deployRequest);
             } catch (VerificationException e) {
                 for (String err : e.getMessages()) {
                     listener.error(err);
@@ -105,8 +126,7 @@ public abstract class AbstractArtifactDeployment extends AbstractHerokuBuildStep
                 return false;
             }
 
-            listener.getLogger().println("Deploying...");
-            final Map<String, String> deployResults = client.deploy(pipelineName, appName, artifacts);
+            final Map<String, String> deployResults = client.deploy(deployRequest);
             listener.getLogger().println("Released " + deployResults.get("release") + " to " + appWebUrl);
 
             return true;
