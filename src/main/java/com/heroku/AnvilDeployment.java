@@ -2,6 +2,7 @@ package com.heroku;
 
 import com.heroku.api.App;
 import com.heroku.api.HerokuAPI;
+import com.herokuapp.janvil.Config;
 import com.herokuapp.janvil.EventSubscription;
 import com.herokuapp.janvil.Janvil;
 import com.herokuapp.janvil.Manifest;
@@ -22,10 +23,10 @@ import org.kohsuke.stapler.QueryParameter;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.HashMap;
 
-import static com.herokuapp.janvil.EventSubscription.Event;
 import static com.herokuapp.janvil.EventSubscription.Subscriber;
-import static com.herokuapp.janvil.Janvil.*;
+import static com.herokuapp.janvil.Janvil.Event;
 
 /**
  * @author Ryan Brainard
@@ -113,7 +114,36 @@ public class AnvilDeployment extends AbstractHerokuBuildStep {
         }
 
         public Boolean invoke(File workspace, VirtualChannel channel) throws IOException, InterruptedException {
-            final Janvil janvil = new Janvil(new Config(apiKey).setProtocol(Protocol.HTTP).setConsumersUserAgent(userAgent));
+            final Janvil janvil = new Janvil(new Config(apiKey)
+                    .setProtocol(Config.Protocol.HTTP)
+                    .setConsumersUserAgent(userAgent)
+                    .setEventSubscription(new EventSubscription<Event>(Event.class)
+                            .subscribe(Event.DIFF_START, new Subscriber<Event>() {
+                                public void handle(Event event, Object data) {
+                                    listener.getLogger().println("Detecting new files...");
+                                }
+                            })
+                            .subscribe(Event.UPLOADS_START, new Subscriber<Event>() {
+                                public void handle(Event event, Object data) {
+                                    listener.getLogger().println("Uploading " + data + " new files...");
+                                }
+                            })
+                            .subscribe(Event.BUILD_OUTPUT_LINE, new Subscriber<Event>() {
+                                public void handle(Event event, Object data) {
+                                    listener.getLogger().println(data);
+                                }
+                            })
+                            .subscribe(Event.RELEASE_START, new Subscriber<Event>() {
+                                public void handle(Event event, Object data) {
+                                    listener.getLogger().println("Releasing build artifact...");
+                                }
+                            })
+                            .subscribe(Event.RELEASE_END, new Subscriber<Event>() {
+                                public void handle(Event event, Object data) {
+                                    listener.getLogger().println("Released " + data + " to " + appWebUrl);
+                                }
+                            })
+                    ));
 
             final Manifest manifest = new Manifest(workspace);
             new DirScanner.Glob(globIncludes, globExcludes).scan(workspace, new FileVisitor() {
@@ -123,37 +153,8 @@ public class AnvilDeployment extends AbstractHerokuBuildStep {
                 }
             });
 
-            final DeployRequest deployRequest = new DeployRequest(manifest, appName)
-                    .setBuildpack(buildpack)
-                    .setEventSubscription(new EventSubscription()
-                            .subscribe(Event.DIFF_START, new Subscriber() {
-                                public void handle(Event event, Object data) {
-                                    listener.getLogger().println("Detecting new files...");
-                                }
-                            })
-                            .subscribe(Event.UPLOADS_START, new Subscriber() {
-                                public void handle(Event event, Object data) {
-                                    listener.getLogger().println("Uploading " + data + " new files...");
-                                }
-                            })
-                            .subscribe(Event.BUILD_OUTPUT_LINE, new Subscriber() {
-                                public void handle(Event event, Object data) {
-                                    listener.getLogger().println(data);
-                                }
-                            })
-                            .subscribe(Event.RELEASE_START, new Subscriber() {
-                                public void handle(Event event, Object data) {
-                                    listener.getLogger().println("Releasing build artifact...");
-                                }
-                            })
-                            .subscribe(Event.RELEASE_END, new Subscriber() {
-                                public void handle(Event event, Object data) {
-                                    listener.getLogger().println("Released " + data + " to " + appWebUrl);
-                                }
-                            })
-                    );
-
-            janvil.deploy(deployRequest);
+            janvil.build(manifest, new HashMap<String, String>(), buildpack);
+            janvil.release(appName, manifest);
 
             return true;
         }
