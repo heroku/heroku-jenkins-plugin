@@ -9,6 +9,6 @@
     </f:entry>
 
     <f:entry title="Mode" field="mode">
-        <f:select/>
+        <f:booleanRadio true="Enabled" false="Disabled"/>
     </f:entry>
 </j:jelly>

@@ -6,7 +6,6 @@ import hudson.Extension;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
-import hudson.util.ListBoxModel;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.io.IOException;
@@ -58,13 +57,6 @@ public class MaintenanceMode extends AbstractHerokuBuildStep {
 
         public String getDisplayName() {
             return "Heroku: Maintenance Mode";
-        }
-
-        public ListBoxModel doFillModeItems() {
-            ListBoxModel items = new ListBoxModel();
-            items.add("Enabled", Boolean.TRUE.toString());
-            items.add("Disabled", Boolean.FALSE.toString());
-            return items;
         }
 
     }
