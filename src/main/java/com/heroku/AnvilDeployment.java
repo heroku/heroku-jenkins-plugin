@@ -117,33 +117,7 @@ public class AnvilDeployment extends AbstractHerokuBuildStep {
             final Janvil janvil = new Janvil(new Config(apiKey)
                     .setProtocol(Config.Protocol.HTTP)
                     .setConsumersUserAgent(userAgent)
-                    .setEventSubscription(new EventSubscription<Event>(Event.class)
-                            .subscribe(Event.DIFF_START, new Subscriber<Event>() {
-                                public void handle(Event event, Object data) {
-                                    listener.getLogger().println("Detecting new files...");
-                                }
-                            })
-                            .subscribe(Event.UPLOADS_START, new Subscriber<Event>() {
-                                public void handle(Event event, Object data) {
-                                    listener.getLogger().println("Uploading " + data + " new files...");
-                                }
-                            })
-                            .subscribe(Event.BUILD_OUTPUT_LINE, new Subscriber<Event>() {
-                                public void handle(Event event, Object data) {
-                                    listener.getLogger().println(data);
-                                }
-                            })
-                            .subscribe(Event.RELEASE_START, new Subscriber<Event>() {
-                                public void handle(Event event, Object data) {
-                                    listener.getLogger().println("Releasing build artifact...");
-                                }
-                            })
-                            .subscribe(Event.RELEASE_END, new Subscriber<Event>() {
-                                public void handle(Event event, Object data) {
-                                    listener.getLogger().println("Released " + data + " to " + appWebUrl);
-                                }
-                            })
-                    ));
+                    .setEventSubscription(buildSubscriptions()));
 
             final Manifest manifest = new Manifest(workspace);
             new DirScanner.Glob(globIncludes, globExcludes).scan(workspace, new FileVisitor() {
@@ -157,6 +131,35 @@ public class AnvilDeployment extends AbstractHerokuBuildStep {
             janvil.release(appName, manifest);
 
             return true;
+        }
+
+        private EventSubscription<Event> buildSubscriptions() {
+            return new EventSubscription<Event>(Event.class)
+                    .subscribe(Event.DIFF_START, new Subscriber<Event>() {
+                        public void handle(Event event, Object data) {
+                            listener.getLogger().println("Detecting new files...");
+                        }
+                    })
+                    .subscribe(Event.UPLOADS_START, new Subscriber<Event>() {
+                        public void handle(Event event, Object data) {
+                            listener.getLogger().println("Uploading " + data + " new files...");
+                        }
+                    })
+                    .subscribe(Event.BUILD_OUTPUT_LINE, new Subscriber<Event>() {
+                        public void handle(Event event, Object data) {
+                            listener.getLogger().println(data);
+                        }
+                    })
+                    .subscribe(Event.RELEASE_START, new Subscriber<Event>() {
+                        public void handle(Event event, Object data) {
+                            listener.getLogger().println("Releasing build artifact...");
+                        }
+                    })
+                    .subscribe(Event.RELEASE_END, new Subscriber<Event>() {
+                        public void handle(Event event, Object data) {
+                            listener.getLogger().println("Released " + data + " to " + appWebUrl);
+                        }
+                    });
         }
     }
 
