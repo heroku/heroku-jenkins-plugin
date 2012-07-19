@@ -78,12 +78,12 @@ public class IncrementalWorkspaceDeployment extends AbstractHerokuBuildStep {
                                 .setEventSubscription(new EventSubscription<Janvil.Event>(Janvil.Event.class)
                                         .subscribe(Janvil.Event.DIFF_START, new EventSubscription.Subscriber<Janvil.Event>() {
                                             public void handle(Janvil.Event event, Object numTotalFiles) {
-                                                listener.getLogger().println("Workspace contains " + numTotalFiles + " files...");
+                                                listener.getLogger().println("Workspace contains " + amt(numTotalFiles, "file") + "...");
                                             }
                                         })
                                         .subscribe(Janvil.Event.UPLOADS_START, new EventSubscription.Subscriber<Janvil.Event>() {
                                             public void handle(Janvil.Event event, Object numDiffFiles) {
-                                                listener.getLogger().println("Uploading " + numDiffFiles + " new files...");
+                                                listener.getLogger().println("Uploading " + amt(numDiffFiles, "new file") + "...");
                                             }
                                         })
                                         .subscribe(Janvil.Event.BUILD_OUTPUT_LINE, new EventSubscription.Subscriber<Janvil.Event>() {
@@ -117,7 +117,7 @@ public class IncrementalWorkspaceDeployment extends AbstractHerokuBuildStep {
 
                 slugPushed[0] = false; //TODO: use exit code
 
-                janvil.build(manifest, Collections.<String, String>emptyMap(), NULL_BUILDPACK);
+                final String slugUrl = janvil.build(manifest, Collections.<String, String>emptyMap(), NULL_BUILDPACK);
 
                 //TODO: use exit code
                 if (!slugPushed[0]) {
@@ -125,9 +125,19 @@ public class IncrementalWorkspaceDeployment extends AbstractHerokuBuildStep {
                     return false;
                 }
 
-                janvil.release(app.getName(), manifest);
+                janvil.release(app.getName(), slugUrl);
 
                 return true;
+            }
+
+            private String amt(Object qty, String counter) {
+                final double num = Double.valueOf(String.valueOf(qty));
+                final String s = qty + " " + counter;
+                if (num == 1) {
+                    return s;
+                } else {
+                    return s + "s";
+                }
             }
         });
     }
