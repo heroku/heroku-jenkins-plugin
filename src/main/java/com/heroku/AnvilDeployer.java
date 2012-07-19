@@ -1,5 +1,6 @@
 package com.heroku;
 
+import com.heroku.api.App;
 import com.herokuapp.janvil.Config;
 import com.herokuapp.janvil.EventSubscription;
 import com.herokuapp.janvil.Janvil;
@@ -13,7 +14,7 @@ import hudson.util.FileVisitor;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.HashMap;
+import java.util.Map;
 
 /**
  * A serializable, immutable payload for the deployment task.
@@ -26,36 +27,47 @@ class AnvilDeployer implements FilePath.FileCallable<Boolean>, Serializable {
     private final String appName;
     private final String appWebUrl;
     private final String userAgent;
-    private final String globIncludes;
-    private final String globExcludes;
+    private final Map<String, String> buildEnv;
+    private final DirScanner dirScanner;
     private final String buildpack;
+    private final boolean[] slugPushed = new boolean[]{false};
 
-    AnvilDeployer(BuildListener listener, String apiKey, String appName, String appWebUrl, String userAgent, String globIncludes, String globExcludes, String buildpack) {
+    AnvilDeployer(BuildListener listener, String apiKey, App app, DirScanner dirScanner, String buildpack, Map<String, String> buildEnv) {
         this.listener = listener;
         this.apiKey = apiKey;
-        this.appName = appName;
-        this.appWebUrl = appWebUrl;
-        this.userAgent = userAgent;
-        this.globIncludes = globIncludes;
-        this.globExcludes = globExcludes;
+        this.appName = app.getName();
+        this.appWebUrl = app.getWebUrl();
+        this.userAgent = new JenkinsUserAgentValueProvider().getLocalUserAgent();
+        this.dirScanner = dirScanner;
         this.buildpack = buildpack;
+        this.buildEnv = buildEnv;
     }
 
-    public Boolean invoke(File workspace, VirtualChannel channel) throws IOException, InterruptedException {
+    public Boolean invoke(File baseDir, VirtualChannel channel) throws IOException, InterruptedException {
         final Janvil janvil = new Janvil(new Config(apiKey)
                 .setProtocol(Config.Protocol.HTTP)
                 .setConsumersUserAgent(userAgent)
                 .setEventSubscription(buildSubscriptions()));
 
-        final Manifest manifest = new Manifest(workspace);
-        new DirScanner.Glob(globIncludes, globExcludes).scan(workspace, new FileVisitor() {
+        final Manifest manifest = new Manifest(baseDir);
+        dirScanner.scan(baseDir, new FileVisitor() {
             @Override
             public void visit(File f, String relativePath) throws IOException {
-                manifest.add(f);
+                if (f.isFile()) {
+                    manifest.add(f);
+                }
             }
         });
 
-        janvil.build(manifest, new HashMap<String, String>(), buildpack);
+        slugPushed[0] = false;
+
+        janvil.build(manifest, buildEnv, buildpack);
+
+        if (!slugPushed[0]) {
+            listener.error("Remote build failed. Aborting deployment.");
+            return false;
+        }
+
         janvil.release(appName, manifest);
 
         return true;
@@ -75,6 +87,7 @@ class AnvilDeployer implements FilePath.FileCallable<Boolean>, Serializable {
                 })
                 .subscribe(Janvil.Event.BUILD_OUTPUT_LINE, new EventSubscription.Subscriber<Janvil.Event>() {
                     public void handle(Janvil.Event event, Object data) {
+                        slugPushed[0] |= (String.valueOf(data).contains("Success, slug is "));
                         listener.getLogger().println(data);
                     }
                 })

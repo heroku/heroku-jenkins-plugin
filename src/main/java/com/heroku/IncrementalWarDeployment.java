@@ -1,5 +1,6 @@
 package com.heroku;
 
+import com.google.common.collect.ImmutableMap;
 import com.heroku.api.App;
 import com.heroku.api.HerokuAPI;
 import hudson.Extension;
@@ -15,23 +16,20 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 
 import java.io.IOException;
-import java.util.HashMap;
 
 /**
  * @author Ryan Brainard
  */
-public class IncrementalWorkspaceDeployment extends AbstractHerokuBuildStep {
+public class IncrementalWarDeployment extends AbstractHerokuBuildStep {
 
-    private static final String NULL_BUILDPACK = "https://github.com/ryandotsmith/null-buildpack.git";
+    private static final String WEBAPP_RUNNER_BUILDPACK = "https://github.com/heroku/heroku-buildpack-webapp-runner.git"; //TODO: parameterize
 
-    private final String globIncludes;
-    private final String globExcludes;
+    private final String warPath;
 
     @DataBoundConstructor
-    public IncrementalWorkspaceDeployment(String apiKey, String appName, String globIncludes, String globExcludes) {
+    public IncrementalWarDeployment(String apiKey, String appName, String warPath) {
         super(apiKey, appName);
-        this.globIncludes = globIncludes;
-        this.globExcludes = globExcludes;
+        this.warPath = warPath;
     }
 
     // Overriding and delegating to parent because Jelly only looks at concrete class when rendering views
@@ -46,23 +44,19 @@ public class IncrementalWorkspaceDeployment extends AbstractHerokuBuildStep {
         return super.getApiKey();
     }
 
-    public String getGlobIncludes() {
-        return globIncludes;
-    }
-
-    public String getGlobExcludes() {
-        return globExcludes;
+    public String getWarPath() {
+        return warPath;
     }
 
     @Override
     public boolean perform(final AbstractBuild build, final Launcher launcher, final BuildListener listener, final HerokuAPI api, final App app) throws IOException, InterruptedException {
-        return build.getWorkspace().act(new AnvilDeployer(
+        return build.getWorkspace().child(warPath).act(new AnvilDeployer(
                 listener,
                 getEffectiveApiKey(),
                 app,
-                new DirScanner.Glob(globIncludes, globExcludes),
-                NULL_BUILDPACK,
-                new HashMap<String, String>()));
+                new DirScanner.Full(),
+                WEBAPP_RUNNER_BUILDPACK,
+                ImmutableMap.of("WEBAPP_RUNNER_VERSION", "7.0.27.1")));
     }
 
     @Override
@@ -74,14 +68,10 @@ public class IncrementalWorkspaceDeployment extends AbstractHerokuBuildStep {
     public static class IncrementalWorkspaceDeploymentDescriptor extends AbstractHerokuBuildStepDescriptor {
 
         public String getDisplayName() {
-            return "Heroku: Deploy Workspace (Incremental)";
+            return "Heroku: Deploy WAR (Incremental)";
         }
 
-        public FormValidation doCheckGlobIncludes(@AncestorInPath AbstractProject project, @QueryParameter String value) throws IOException {
-            return FilePath.validateFileMask(project.getSomeWorkspace(), value);
-        }
-
-        public FormValidation doCheckGlobExcludes(@AncestorInPath AbstractProject project, @QueryParameter String value) throws IOException {
+        public FormValidation doWarPath(@AncestorInPath AbstractProject project, @QueryParameter String value) throws IOException {
             return FilePath.validateFileMask(project.getSomeWorkspace(), value);
         }
 
