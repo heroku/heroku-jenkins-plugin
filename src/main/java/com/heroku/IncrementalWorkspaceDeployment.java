@@ -89,7 +89,6 @@ public class IncrementalWorkspaceDeployment extends AbstractHerokuBuildStep {
                                         .subscribe(Janvil.Event.BUILD_OUTPUT_LINE, new EventSubscription.Subscriber<Janvil.Event>() {
                                             public void handle(Janvil.Event event, Object data) {
                                                 // do not output to jenkins user
-                                                System.out.println(data); //TODO: REMOVE
 
                                                 slugPushed[0] |= (String.valueOf(data).contains("Success, slug is ")); //TODO: use exit code
                                             }
