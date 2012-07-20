@@ -16,8 +16,6 @@ import hudson.tasks.Builder;
 import hudson.util.DirScanner;
 import hudson.util.FileVisitor;
 import hudson.util.FormValidation;
-import org.apache.commons.io.FileUtils;
-import org.apache.tools.ant.taskdefs.Untar;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
@@ -70,11 +68,11 @@ public class RemoteBuild extends Builder {
     public boolean perform(final AbstractBuild build, final Launcher launcher, final BuildListener listener) throws IOException, InterruptedException {
         final String userAgent = new JenkinsUserAgentValueProvider().getLocalUserAgent();
 
-        return build.getWorkspace().act(new FilePath.FileCallable<Boolean>() {
+        final URL slugUrl = build.getWorkspace().act(new FilePath.FileCallable<URL>() {
 
             final boolean[] slugPushed = new boolean[]{false}; //TODO: use exit code
 
-            public Boolean invoke(File workspace, VirtualChannel channel) throws IOException, InterruptedException {
+            public URL invoke(File workspace, VirtualChannel channel) throws IOException, InterruptedException {
                 final Janvil janvil = new Janvil(
                         new Config("")
                                 .setConsumersUserAgent(userAgent)
@@ -117,38 +115,27 @@ public class RemoteBuild extends Builder {
 
                 //TODO: use exit code
                 if (!slugPushed[0]) {
-                    listener.error("Remote Build failed.");
-                    return false;
+                    throw new IllegalStateException("Remote Build failed."); //TODO
                 }
 
-                final File artifact = File.createTempFile("slug", ".targz");
-                try {
-                    listener.getLogger().println("Downloading artifact...");
-                    FileUtils.copyURLToFile(new URL(slugUrl), artifact /*TODO: streamable?? */);
-
-                    listener.getLogger().println("Extracting artifact...");
-                    final Untar untar = new Untar();
-                    untar.setCompression((Untar.UntarCompressionMethod) Untar.UntarCompressionMethod.getInstance(Untar.UntarCompressionMethod.class, "gzip"));
-                    untar.setSrc(artifact  /*TODO: streamable?? */);
-                    untar.setDest(workspace /* TODO: configurable?? */);
-                    untar.execute();
-                } finally {
-                    artifact.delete();
-                }
-
-                return true;
-            }
-
-            private String amt(Object qty, String counter) {
-                final double num = Double.valueOf(String.valueOf(qty));
-                final String s = qty + " " + counter;
-                if (num == 1) {
-                    return s;
-                } else {
-                    return s + "s";
-                }
+                return new URL(slugUrl);
             }
         });
+
+        listener.getLogger().println("Downloading build output...");
+        build.getWorkspace().untarFrom(slugUrl.openStream(), FilePath.TarCompression.GZIP);
+
+        return true;
+    }
+
+    private static String amt(Object qty, String counter) {
+        final double num = Double.valueOf(String.valueOf(qty));
+        final String s = qty + " " + counter;
+        if (num == 1) {
+            return s;
+        } else {
+            return s + "s";
+        }
     }
 
     @Override
