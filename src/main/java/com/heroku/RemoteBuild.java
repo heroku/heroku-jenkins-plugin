@@ -7,6 +7,7 @@ import com.herokuapp.janvil.Manifest;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
+import hudson.Util;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
@@ -22,7 +23,11 @@ import org.kohsuke.stapler.QueryParameter;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Arrays;
+import java.util.List;
 
 /*
  * @author Ryan Brainard
@@ -153,6 +158,24 @@ public class RemoteBuild extends Builder {
         @Override
         public boolean isApplicable(Class<? extends AbstractProject> jobType) {
             return true;
+        }
+
+        public FormValidation doCheckBuildpackUrl(@AncestorInPath AbstractProject project, @QueryParameter String value) throws IOException {
+            if (Util.fixEmptyAndTrim(value) == null) {
+                return FormValidation.okWithMarkup(
+                        "<a href='https://devcenter.heroku.com/articles/buildpacks' target='_blank'>Buildpack</a> will be auto-detected. Provide a custom URL to override.");
+            } else {
+                final List<String> allowedSchemes = Arrays.asList("http", "https", "git");
+                try {
+                    final URI buildpackUrl = new URI(value);
+                    if (buildpackUrl.getScheme() == null || !allowedSchemes.contains(buildpackUrl.getScheme())) {
+                        return FormValidation.error("Should be of type http:// or git://");
+                    }
+                    return FormValidation.ok();
+                } catch (URISyntaxException e) {
+                    return FormValidation.error("Invalid URL format");
+                }
+            }
         }
 
         public FormValidation doCheckGlobIncludes(@AncestorInPath AbstractProject project, @QueryParameter String value) throws IOException {
