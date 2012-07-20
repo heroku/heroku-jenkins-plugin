@@ -4,10 +4,7 @@ import com.herokuapp.janvil.Config;
 import com.herokuapp.janvil.EventSubscription;
 import com.herokuapp.janvil.Janvil;
 import com.herokuapp.janvil.Manifest;
-import hudson.Extension;
-import hudson.FilePath;
-import hudson.Launcher;
-import hudson.Util;
+import hudson.*;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
@@ -28,6 +25,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 /*
  * @author Ryan Brainard
@@ -35,15 +33,15 @@ import java.util.List;
 public class RemoteBuild extends Builder {
 
     private final String buildpackUrl;
-    private final String envStr;
+    private final String buildEnv;
     private String globIncludes;
     private String globExcludes;
     private final boolean useCache;
 
     @DataBoundConstructor
-    public RemoteBuild(String buildpackUrl, String envStr, String globIncludes, String globExcludes, boolean useCache) {
+    public RemoteBuild(String buildpackUrl, String buildEnv, String globIncludes, String globExcludes, boolean useCache) {
         this.buildpackUrl = buildpackUrl;
-        this.envStr = envStr;
+        this.buildEnv = buildEnv;
         this.globIncludes = globIncludes;
         this.globExcludes = globExcludes;
         this.useCache = useCache;
@@ -53,8 +51,8 @@ public class RemoteBuild extends Builder {
         return buildpackUrl;
     }
 
-    public String getEnvStr() {
-        return envStr;
+    public String getBuildEnv() {
+        return buildEnv;
     }
 
     public String getGlobIncludes() {
@@ -116,7 +114,15 @@ public class RemoteBuild extends Builder {
 
                 slugPushed[0] = false; //TODO: use exit code
 
-                final String slugUrl = janvil.build(manifest, MappingConverter.convert(envStr), buildpackUrl);
+                final Map<String, String> buildEnvMap = MappingConverter.convert(buildEnv);
+
+                // expand with jenkins env vars TODO: make this optional?
+                final EnvVars jenkinsEnv = build.getEnvironment(listener);
+                for (Map.Entry<String, String> e : buildEnvMap.entrySet()) {
+                    e.setValue(jenkinsEnv.expand(e.getValue()));
+                }
+
+                final String slugUrl = janvil.build(manifest, buildEnvMap, buildpackUrl);
 
                 //TODO: use exit code
                 if (!slugPushed[0]) {
@@ -175,6 +181,17 @@ public class RemoteBuild extends Builder {
                 } catch (URISyntaxException e) {
                     return FormValidation.error("Invalid URL format");
                 }
+            }
+        }
+
+        public FormValidation doCheckBuildEnv(@AncestorInPath AbstractProject project, @QueryParameter String value) throws IOException {
+            try {
+                MappingConverter.convert(value);
+                return FormValidation.ok();
+            } catch (Exception e) {
+                return FormValidation.errorWithMarkup(
+                        "Error parsing environment variables. " +
+                                "Syntax follows that of <a href='http://docs.oracle.com/javase/6/docs/api/java/util/Properties.html#load(java.io.Reader)' target='_blank'> Java Properties files</a>.");
             }
         }
 
