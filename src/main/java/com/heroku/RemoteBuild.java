@@ -123,7 +123,7 @@ public class RemoteBuild extends Builder {
         });
 
         listener.getLogger().println("Downloading build output...");
-        build.getWorkspace().untarFrom(slugUrl.openStream(), FilePath.TarCompression.GZIP);
+        OverwritableUntar.untar(slugUrl.openStream(), build.getWorkspace(), FilePath.TarCompression.GZIP);
 
         return true;
     }
