@@ -1,3 +1,5 @@
-Deploys your Jenkins workspace to a Heroku app.
-See advanced options for including and excluding certain files and the location of your <a
-        href="https://devcenter.heroku.com/articles/procfile">Procfile</a>.
+Remotely builds the workspace on Heroku with a given buildpack and downloads results back to the workspace.
+If the Buildpack URL is not provided, remote auto-detection will be attempted based on the contents of your workspace.
+See advanced options for configuring the build environment, caching, and including and excluding certain files.
+Note, this build step does not release the build results to Heroku.
+If you wish to release the results, use the Workspace Deploy build step after this step completes.

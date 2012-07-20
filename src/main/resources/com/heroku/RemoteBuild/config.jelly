@@ -6,7 +6,7 @@
     </f:entry>
 
     <f:advanced>
-        <f:entry title="Build Environment" field="envStr">
+        <f:entry title="Build Environment" field="buildEnv">
             <f:textarea/>
         </f:entry>
 
