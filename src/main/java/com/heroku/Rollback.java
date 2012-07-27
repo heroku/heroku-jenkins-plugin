@@ -68,9 +68,5 @@ public class Rollback extends AbstractHerokuBuildStep {
         public String getDisplayName() {
             return "Heroku: Rollback";
         }
-
-        public FormValidation doCheckCommand(@AncestorInPath AbstractProject project, @QueryParameter String command) throws IOException {
-            return FormValidation.validateRequired(command);
-        }
     }
 }
