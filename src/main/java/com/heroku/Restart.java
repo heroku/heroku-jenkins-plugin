@@ -2,19 +2,13 @@ package com.heroku;
 
 import com.heroku.api.App;
 import com.heroku.api.HerokuAPI;
-import com.heroku.api.Release;
 import hudson.Extension;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
-import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
-import hudson.util.FormValidation;
-import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.QueryParameter;
 
 import java.io.IOException;
-import java.util.List;
 
 /**
  * @author Ryan Brainard
@@ -49,12 +43,12 @@ public class Restart extends AbstractHerokuBuildStep {
 
 
     @Override
-    public RollbackDescriptor getDescriptor() {
-        return (RollbackDescriptor) super.getDescriptor();
+    public RestartDescriptor getDescriptor() {
+        return (RestartDescriptor) super.getDescriptor();
     }
 
     @Extension
-    public static final class RollbackDescriptor extends AbstractHerokuBuildStepDescriptor {
+    public static final class RestartDescriptor extends AbstractHerokuBuildStepDescriptor {
 
         public String getDisplayName() {
             return "Heroku: Restart";

@@ -41,6 +41,10 @@ public class ConfigAdd extends AbstractHerokuBuildStep {
         return super.getApiKey();
     }
 
+    public String getConfigVars() {
+        return configVars;
+    }
+
     @Override
     protected boolean perform(AbstractBuild build, Launcher launcher, BuildListener listener, HerokuAPI api, App app) throws IOException, InterruptedException {
         listener.getLogger().println("Setting config vars and restarting " + app.getName() + " ...");
@@ -57,18 +61,18 @@ public class ConfigAdd extends AbstractHerokuBuildStep {
 
 
     @Override
-    public RollbackDescriptor getDescriptor() {
-        return (RollbackDescriptor) super.getDescriptor();
+    public ConfigAddDescriptor getDescriptor() {
+        return (ConfigAddDescriptor) super.getDescriptor();
     }
 
     @Extension
-    public static final class RollbackDescriptor extends AbstractHerokuBuildStepDescriptor {
+    public static final class ConfigAddDescriptor extends AbstractHerokuBuildStepDescriptor {
 
         public String getDisplayName() {
             return "Heroku: Set Configuration";
         }
 
-        public FormValidation doCheckConfig(@AncestorInPath AbstractProject project, @QueryParameter String value) throws IOException {
+        public FormValidation doCheckConfigVars(@AncestorInPath AbstractProject project, @QueryParameter String value) throws IOException {
             try {
                 MappingConverter.convert(value);
                 return hudson.util.FormValidation.ok();
