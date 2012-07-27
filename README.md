@@ -117,12 +117,18 @@ Building & Installing from Source
 Changelog
 =========
 
+Version 0.6 (July 27, 2012)
+---------------------------
+ - New Restart build step
+ - New Set Configuration build step
+ - Upgrade to direct-to-heroku-client 0.6-BETA
+
 Version 0.5 Beta (June 27, 2012)
 --------------------------------
  - New Maintenance Mode build step
  - Upload message during artifact deployment
  - Upgrade to heroku-api 0.11
- - Upgrade to direct-to-heroku-client 0.5
+ - Upgrade to direct-to-heroku-client 0.5-BETA
 
 Version 0.4 Beta (June 22, 2012)
 -------------------------------
@@ -140,7 +146,7 @@ Version 0.3 Beta (June 2, 2012)
 Version 0.2 Beta (May 15, 2012)
 -------------------------------
  - Upgrade to heroku-api 0.8
- - Upgrade to direct-to-heroku-client 0.4
+ - Upgrade to direct-to-heroku-client 0.4-BETA
  - First release to jenkins-ci.org
 
 Version 0.1 Beta (May 8, 2012)
