@@ -51,6 +51,11 @@ Otherwise, create the WAR file in whatever way is approiate for your build.
 After the WAR file is created, add the `Heroku: Deploy WAR Artifact` build step to your under the Jenkins build configuration
 and specify the relative path to the WAR file created in a previous build step to deploy.
 
+Set Configuration
+-----------------
+
+The `Set Configuration` build step adds or updates [config vars](https://devcenter.heroku.com/articles/config-vars) to the specified app.
+
 Scale Process
 -------------
 
