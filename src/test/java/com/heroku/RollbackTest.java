@@ -25,9 +25,9 @@ public class RollbackTest extends BaseHerokuBuildStepTest {
         final FreeStyleBuild build = project.scheduleBuild2(0).get();
 
         final List<Release> releasesAfter = api.listReleases(appName);
-        assertEquals(releasesBefore.size() + 1, releasesAfter.size());
-        final Release afterRelease = releasesAfter.get(releasesAfter.size() - 1);
-        final int releaseBeforeLast = releaseNameToInt(releaseBefore.getName()) - 1;
+        assertEquals(v(last(releasesBefore)) + 1, v(last(releasesAfter)));
+        final Release afterRelease = last(releasesAfter);
+        final int releaseBeforeLast = v(releaseBefore) - 1;
         assertEquals("Rollback to v" + releaseBeforeLast, afterRelease.getDescription());
     }
 
@@ -47,8 +47,8 @@ public class RollbackTest extends BaseHerokuBuildStepTest {
         });
     }
 
-    private int releaseNameToInt(String releaseName) {
-        final Matcher matcher = Pattern.compile("v(\\d+)").matcher(releaseName);
+    private int v(Release release) {
+        final Matcher matcher = Pattern.compile("v(\\d+)").matcher(release.getName());
         if (!matcher.matches()) throw new IllegalArgumentException();
         return Integer.parseInt(matcher.group(1));
     }
