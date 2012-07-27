@@ -66,6 +66,10 @@ Rollback
 
 The `Rollback` build step [rolls back](https://devcenter.heroku.com/articles/releases#rollback) to the previous release.
 
+Restart
+--------
+
+The `Restart` build step [restart](https://devcenter.heroku.com/articles/ps#process_restarts) the specified app.
 
 Maintenance Mode
 ----------------
