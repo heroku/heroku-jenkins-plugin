@@ -1,3 +1,8 @@
+package com.heroku;
+
+import java.io.IOException;
+import java.io.Reader;
+import java.io.StringReader;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
