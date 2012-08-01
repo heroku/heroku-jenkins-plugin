@@ -94,10 +94,6 @@ public class RemoteBuild extends Builder {
                                         })
                                         .subscribe(Janvil.Event.BUILD_OUTPUT_LINE, new EventSubscription.Subscriber<Janvil.Event>() {
                                             public void handle(Janvil.Event event, Object data) {
-                                                if (!String.valueOf(data).contains("slug")) {
-                                                    listener.getLogger().println(data);
-                                                }
-
                                                 slugPushed[0] |= (String.valueOf(data).contains("Success, slug is ")); //TODO: use exit code
                                             }
                                         })));
@@ -132,9 +128,6 @@ public class RemoteBuild extends Builder {
                 return new URL(slugUrl);
             }
         });
-
-        listener.getLogger().println("Downloading build output...");
-        OverwritableUntar.untar(slugUrl.openStream(), build.getWorkspace(), FilePath.TarCompression.GZIP);
 
         return true;
     }
