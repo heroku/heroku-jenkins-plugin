@@ -94,6 +94,7 @@ public class RemoteBuild extends Builder {
                                         })
                                         .subscribe(Janvil.Event.BUILD_OUTPUT_LINE, new EventSubscription.Subscriber<Janvil.Event>() {
                                             public void handle(Janvil.Event event, Object data) {
+                                                listener.getLogger().println(data);
                                                 slugPushed[0] |= (String.valueOf(data).contains("Success, slug is ")); //TODO: use exit code
                                             }
                                         })));
