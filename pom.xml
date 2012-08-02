@@ -33,7 +33,7 @@
 
     <properties>
         <heroku-jenkins-plugin.version>${project.version}</heroku-jenkins-plugin.version>
-        <com.heroku.api.version>0.12</com.heroku.api.version>
+        <com.heroku.api.version>0.13-SNAPSHOT</com.heroku.api.version>
     </properties>
 
     <repositories>
@@ -63,6 +63,11 @@
         <dependency>
             <groupId>com.heroku.api</groupId>
             <artifactId>heroku-json-jersey-client</artifactId>
+            <version>${com.heroku.api.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.heroku.api</groupId>
+            <artifactId>heroku-api-ext-releases</artifactId>
             <version>${com.heroku.api.version}</version>
         </dependency>
         <dependency>

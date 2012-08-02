@@ -28,6 +28,10 @@ abstract class AbstractHerokuBuildStep extends Builder {
 
     @DataBoundConstructor
     AbstractHerokuBuildStep(String apiKey, String appName) {
+        if (appName == null || appName.trim().length() == 0) {
+            throw new IllegalArgumentException("App name must be provided");
+        }
+
         this.apiKey = Secret.fromString(apiKey);
         this.appName = appName;
     }
