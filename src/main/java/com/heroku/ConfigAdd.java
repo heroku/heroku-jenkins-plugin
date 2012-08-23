@@ -47,7 +47,7 @@ public class ConfigAdd extends AbstractHerokuBuildStep {
 
     @Override
     protected boolean perform(AbstractBuild build, Launcher launcher, BuildListener listener, HerokuAPI api, App app) throws IOException, InterruptedException {
-        listener.getLogger().println("Setting config vars and restarting " + app.getName() + " ...");
+        listener.getLogger().println("Setting config vars and restarting " + app.getName() + "...");
 
         final String expandedConfigVars = build.getEnvironment(listener).expand(configVars);
         api.addConfig(app.getName(), MappingConverter.convert(expandedConfigVars));

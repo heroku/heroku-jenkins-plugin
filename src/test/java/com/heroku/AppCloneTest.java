@@ -17,6 +17,6 @@ public class AppCloneTest extends BaseHerokuBuildStepTest {
         FreeStyleBuild build = project.scheduleBuild2(0).get();
 
         String logs = FileUtils.readFileToString(build.getLogFile());
-        assertTrue(logs.contains("Created new app: " + newAppName));
+        assertTrue(logs.contains("Done, created app " + newAppName));
     }
 }

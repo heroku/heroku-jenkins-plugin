@@ -34,9 +34,8 @@ public class Restart extends AbstractHerokuBuildStep {
 
     @Override
     protected boolean perform(AbstractBuild build, Launcher launcher, BuildListener listener, HerokuAPI api, App app) throws IOException, InterruptedException {
-        listener.getLogger().println("Restarting app " + app.getName() + " ...");
+        listener.getLogger().println("Restarting " + app.getName());
         api.restart(app.getName());
-        listener.getLogger().println("Restart complete");
 
         return true;
     }

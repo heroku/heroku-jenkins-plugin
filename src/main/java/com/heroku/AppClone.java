@@ -51,9 +51,9 @@ public class AppClone extends AbstractHerokuBuildStep {
 
     @Override
     protected boolean perform(AbstractBuild build, Launcher launcher, BuildListener listener, HerokuAPI api, App targetApp) throws IOException, InterruptedException {
-        listener.getLogger().println("Cloning template app " + templateAppName + " with name " + targetApp.getName());
+        listener.getLogger().println("Cloning template " + templateAppName + "...");
         final App clonedApp = api.cloneApp(templateAppName, targetApp);
-        listener.getLogger().println("Created new app: " + clonedApp.getName());
+        listener.getLogger().println("Done, created app " + clonedApp.getName());
 
         return true;
     }

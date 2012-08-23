@@ -6,12 +6,8 @@ import com.heroku.api.Release;
 import hudson.Extension;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
-import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
-import hudson.util.FormValidation;
-import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.QueryParameter;
 
 import java.io.IOException;
 import java.util.List;
@@ -43,16 +39,16 @@ public class Rollback extends AbstractHerokuBuildStep {
         final List<Release> releases = api.listReleases(app.getName());
 
         if (releases.size() < 2) {
-            listener.error("Cannot rollback to before app was created.");
+            listener.error(app.getName() + " does not have a release to rollback.");
             return false;
         }
 
         final Release lastRelease = releases.get(releases.size() - 2);
 
-        listener.getLogger().println("Rolling back to " + lastRelease.getName() + "(" + lastRelease.getCommit() + ") ...");
+        listener.getLogger().println("Rolling back " + app.getName() + "...");
         api.rollback(app.getName(), lastRelease.getName());
-        listener.getLogger().println("Rollback complete");
-
+        final List<Release> postRollbackReleases = api.listReleases(app.getName());
+        listener.getLogger().println("Done, " + postRollbackReleases.get(postRollbackReleases.size() - 1).getName());
         return true;
     }
 

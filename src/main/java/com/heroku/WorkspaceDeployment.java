@@ -71,7 +71,7 @@ public class WorkspaceDeployment extends AbstractArtifactDeployment {
     @Override
     public boolean perform(AbstractBuild build, Launcher launcher, BuildListener listener, HerokuAPI api, App app) throws IOException, InterruptedException {
         try {
-            listener.getLogger().println("Bundling workspace for deployment");
+            listener.getLogger().println("Bundling workspace for deployment...");
 
             if (!build.getWorkspace().child(artifactPaths.get(PROCFILE_PATH)).exists()) {
                 listener.error("Profile not found in workspace. \n" +

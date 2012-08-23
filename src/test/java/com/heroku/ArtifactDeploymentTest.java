@@ -65,7 +65,7 @@ public class ArtifactDeploymentTest extends BaseHerokuBuildStepTest {
         String logs = FileUtils.readFileToString(build.getLogFile());
         assertTrue(logs, logs.contains("Uploading..."));
         assertTrue(logs, logs.contains("Deploying..."));
-        assertTrue(logs, logs.contains("Released v"));
+        assertTrue(logs, logs.contains("Launching... done, v"));
     }
 
     private AbstractArtifactDeployment createDeploymentBuildStep() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, InstantiationException {

@@ -91,7 +91,7 @@ public abstract class AbstractArtifactDeployment extends AbstractHerokuBuildStep
         }
 
         public Boolean invoke(File workspace, VirtualChannel channel) throws IOException, InterruptedException {
-            listener.getLogger().println("Preparing to deploy " + pipelineDisplayName + " to app " + appName);
+            listener.getLogger().println("Preparing to deploy " + pipelineDisplayName + " to " + appName + "...");
 
             final DirectToHerokuClient client = new DirectToHerokuClient.Builder()
                     .setApiKey(apiKey)
@@ -127,7 +127,8 @@ public abstract class AbstractArtifactDeployment extends AbstractHerokuBuildStep
             }
 
             final Map<String, String> deployResults = client.deploy(deployRequest);
-            listener.getLogger().println("Released " + deployResults.get("release") + " to " + appWebUrl);
+            listener.getLogger().println("Launching... done, " +  deployResults.get("release"));
+            listener.getLogger().println(appWebUrl + " deployed to Heroku");
 
             return true;
         }

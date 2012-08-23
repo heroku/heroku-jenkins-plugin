@@ -41,7 +41,7 @@ public class RollbackTest extends BaseHerokuBuildStepTest {
                 final FreeStyleBuild build = project.scheduleBuild2(0).get();
                 String logs = FileUtils.readFileToString(build.getLogFile());
 
-                assertStringContains(logs, "Cannot rollback to before app was created");
+                assertStringContains(logs, app.getName() + " does not have a release to rollback.");
                 assertEquals("Should still only have one release", 1, api.listReleases(app.getName()).size());
             }
         });

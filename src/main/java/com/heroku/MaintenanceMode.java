@@ -41,7 +41,7 @@ public class MaintenanceMode extends AbstractHerokuBuildStep {
 
     @Override
     protected boolean perform(AbstractBuild build, Launcher launcher, BuildListener listener, HerokuAPI api, App app) throws IOException, InterruptedException {
-        listener.getLogger().println((mode ? "Enabling" : "Disabling") + " maintenance mode for app " + app.getName());
+        listener.getLogger().println((mode ? "Enabling" : "Disabling") + " maintenance mode for " + app.getName());
         api.setMaintenanceMode(app.getName(), mode);
         return true;
     }
