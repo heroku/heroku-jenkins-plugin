@@ -17,6 +17,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 
 import java.io.IOException;
+import java.net.HttpURLConnection;
 
 /**
  * @author Ryan Brainard
@@ -65,7 +66,12 @@ abstract class AbstractHerokuBuildStep extends Builder {
             return defaultApiKeyPlainText;
         }
 
-        throw new RuntimeException("Heroku API key not specified.");
+        throw new HerokuJenkinsHandledException("Heroku API key not specified. \n" +
+                "       This can be configured either with a global default or for individual build steps. \n" +
+                "       To configure a global default API key, go to Manage Jenkins | Heroku | Default API Key. \n" +
+                "       The global key will be used by Heroku build steps unless otherwise overridden. \n" +
+                "       If no global default is specified, individual build steps must specify their own API keys under their respective Advanced settings. \n" +
+                "       Your Heroku API key can be obtained from the Heroku account page at https://api.heroku.com/account.");
     }
 
     protected App getOrCreateApp(BuildListener listener, HerokuAPI api) {
@@ -74,6 +80,10 @@ abstract class AbstractHerokuBuildStep extends Builder {
         try {
             app = api.getApp(appName);
         } catch (RequestFailedException appListingException) {
+            if (appListingException.getStatusCode() == HttpURLConnection.HTTP_FORBIDDEN) {
+                throw new HerokuJenkinsHandledException("No access to Heroku app " + appName + ". Check API key, app name, and ensure you have access.");
+            }
+
             try {
                 app = api.createApp(new App().named(appName).on(Heroku.Stack.Cedar));
                 listener.getLogger().println("Created new app " + appName);
@@ -83,18 +93,27 @@ abstract class AbstractHerokuBuildStep extends Builder {
             }
         }
 
+        if (app == null || app.getId() == null) {
+            throw new HerokuJenkinsHandledException("Heroku app " + appName + " could not be found. Check API key, app name, and ensure you have access.");
+        }
+
         return app;
     }
 
     @Override
     public boolean perform(final AbstractBuild build, final Launcher launcher, final BuildListener listener) throws IOException, InterruptedException {
-        final HerokuAPI api = new HerokuAPI(getEffectiveApiKey());
-        final App app = getOrCreateApp(listener, api);
         try {
-            return perform(build, launcher, listener, api, app);
-        } catch (RequestFailedException e) {
+            final HerokuAPI api = new HerokuAPI(getEffectiveApiKey());
+            final App app = getOrCreateApp(listener, api);
+            try {
+                return perform(build, launcher, listener, api, app);
+            } catch (RequestFailedException e) {
+                listener.error(e.getMessage());
+                e.printStackTrace(listener.getLogger());
+                return false;
+            }
+        } catch (HerokuJenkinsHandledException e) {
             listener.error(e.getMessage());
-            e.printStackTrace(listener.getLogger());
             return false;
         }
     }
