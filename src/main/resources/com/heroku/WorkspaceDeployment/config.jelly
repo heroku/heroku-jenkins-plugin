@@ -1,5 +1,10 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
+
+    <f:entry>
+        <strong style='color:red'>DEPRECATED: Deploy Workspace will be removed from a future version of the Heroku plugin.</strong>
+    </f:entry>
+
     <f:entry title="API Key" field="apiKey">
         <f:password/>
     </f:entry>

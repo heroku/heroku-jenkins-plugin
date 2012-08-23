@@ -63,6 +63,12 @@ public class WorkspaceDeployment extends AbstractArtifactDeployment {
     }
 
     @Override
+    public boolean perform(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
+        listener.getLogger().println("DEPRECATED: Deploy Workspace will be removed from a future version of the Heroku plugin.");
+        return super.perform(build, launcher, listener);
+    }
+
+    @Override
     public boolean perform(AbstractBuild build, Launcher launcher, BuildListener listener, HerokuAPI api, App app) throws IOException, InterruptedException {
         try {
             listener.getLogger().println("Bundling workspace for deployment");
@@ -119,6 +125,11 @@ public class WorkspaceDeployment extends AbstractArtifactDeployment {
 
     @Extension
     public static class WorkspaceDeploymentDescriptor extends AbstractArtifactDeployment.AbstractArtifactDeploymentDescriptor {
+
+        @Override
+        public boolean isApplicable(Class<? extends AbstractProject> jobType) {
+            return false;
+        }
 
         @Override
         public String getPipelineName() {
