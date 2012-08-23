@@ -81,20 +81,24 @@ abstract class AbstractHerokuBuildStep extends Builder {
             app = api.getApp(appName);
         } catch (RequestFailedException appListingException) {
             if (appListingException.getStatusCode() == HttpURLConnection.HTTP_FORBIDDEN) {
-                throw new HerokuJenkinsHandledException("No access to Heroku app " + appName + ". Check API key, app name, and ensure you have access.");
+                throw new HerokuJenkinsHandledException("No access to Heroku app '" + appName + "'. Check API key, app name, and ensure you have access.");
             }
 
             try {
                 app = api.createApp(new App().named(appName).on(Heroku.Stack.Cedar));
                 listener.getLogger().println("Created new app " + appName);
-            } catch (RuntimeException appCreationException) {
-                listener.error("Could not create app " + appName + "\n" + appCreationException.getMessage());
+            } catch (RequestFailedException appCreationException) {
+                if (appCreationException.getStatusCode() == HttpURLConnection.HTTP_UNAUTHORIZED) {
+                    throw new HerokuJenkinsHandledException("No access to create Heroku app '" + appName + "'. Check API key.");
+                }
+
+                listener.error("Unknown error creating app '" + appName + "'\n" + appCreationException.getMessage());
                 throw appCreationException;
             }
         }
 
         if (app == null || app.getId() == null) {
-            throw new HerokuJenkinsHandledException("Heroku app " + appName + " could not be found. Check API key, app name, and ensure you have access.");
+            throw new HerokuJenkinsHandledException("Heroku app '" + appName + "' could not be found. Check API key, app name, and ensure you have access.");
         }
 
         return app;
