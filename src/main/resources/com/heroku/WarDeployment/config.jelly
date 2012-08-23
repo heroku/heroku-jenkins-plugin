@@ -1,9 +1,5 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
-    <f:entry title="API Key" field="apiKey">
-        <f:password/>
-    </f:entry>
-
     <f:entry title="App Name" field="appName">
         <f:textbox/>
     </f:entry>
@@ -11,4 +7,10 @@
     <f:entry title="WAR Path" field="warPath">
         <f:textbox/>
     </f:entry>
+
+    <f:advanced>
+        <f:entry title="API Key" field="apiKey">
+            <f:password/>
+        </f:entry>
+    </f:advanced>
 </j:jelly>

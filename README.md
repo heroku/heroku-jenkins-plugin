@@ -16,7 +16,7 @@ Configuration
 The Heroku API key used by build steps can be configured either with a global default or for individual build steps.
 To configure a global default API key, go to Manage Jenkins | Heroku | Default API Key. This key will be used
 by Heroku build steps unless otherwise overridden. If no global default is specified, individual build steps must specify
-their own API keys. Your Heroku API key can be obtained from your [Heroku account page](https://api.heroku.com/account).
+their own API keys under their respective Advanced settings. Your Heroku API key can be obtained from your [Heroku account page](https://api.heroku.com/account).
 
 All build steps also include the following fields:
 
