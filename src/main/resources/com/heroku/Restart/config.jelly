@@ -1,11 +1,11 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
-    <f:entry title="App Name" field="appName">
+    <f:entry title="App Name" field="appName" help="/plugin/heroku-jenkins-plugin/help-appName.html">
         <f:textbox/>
     </f:entry>
 
     <f:advanced>
-        <f:entry title="API Key" field="apiKey">
+        <f:entry title="API Key" field="apiKey" help="/plugin/com.heroku.heroku-jenkins-plugin/help-apiKey.html">
             <f:password/>
         </f:entry>
     </f:advanced>

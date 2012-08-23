@@ -2,7 +2,8 @@
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
     <f:section title="Heroku">
         <f:entry title="Default API Key"
-                 description="Default API Key for Heroku. Can be overridden by individual jobs.">
+                 description="Default API Key for Heroku. Can be overridden by individual build step."
+                 help="/plugin/heroku-jenkins-plugin/help-defaultApiKey.html">
             <f:password name="defaultApiKey" value="${it.defaultApiKey}"/>
         </f:entry>
     </f:section>
