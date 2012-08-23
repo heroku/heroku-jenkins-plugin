@@ -106,11 +106,16 @@ abstract class AbstractHerokuBuildStep extends Builder {
 
     @Override
     public boolean perform(final AbstractBuild build, final Launcher launcher, final BuildListener listener) throws IOException, InterruptedException {
+        listener.getLogger().println("=== Starting " + getDescriptor().getDisplayName() + " ===");
         try {
             final HerokuAPI api = new HerokuAPI(getEffectiveApiKey());
             final App app = getOrCreateApp(listener, api);
             try {
-                return perform(build, launcher, listener, api, app);
+                final boolean result = perform(build, launcher, listener, api, app);
+                if (result) {
+                    listener.getLogger().println("=== Completed " + getDescriptor().getDisplayName() + " ===");
+                }
+                return result;
             } catch (RequestFailedException e) {
                 listener.error(e.getMessage());
                 e.printStackTrace(listener.getLogger());
