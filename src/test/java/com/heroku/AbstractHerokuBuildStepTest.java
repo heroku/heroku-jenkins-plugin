@@ -44,7 +44,8 @@ public class AbstractHerokuBuildStepTest extends BaseHerokuBuildStepTest {
         try {
             step.getEffectiveApiKey();
             fail();
-        } catch (RuntimeException e) {
+        } catch (HerokuJenkinsHandledException e) {
+            assertStringContains(e.getMessage(), "Heroku API key not specified");
         }
     }
 
@@ -52,6 +53,27 @@ public class AbstractHerokuBuildStepTest extends BaseHerokuBuildStepTest {
         final AbstractHerokuBuildStep step = new AbstractHerokuBuildStep(null, appName) {
         };
         assertEquals(appName, step.getAppName());
+    }
+
+    public void testGetOrCreateApp_AlreadyExists_WithoutAccess() throws Exception {
+        final String existingAppWithoutAccess = "java";
+        assertTrue("Precondition: App should already exist", api.appExists(existingAppWithoutAccess));
+
+        try {
+            api.getApp(existingAppWithoutAccess).getName();
+            fail("Precondition: User should not have access");
+        } catch (RequestFailedException e) {
+            assertStringContains(e.getResponseBody(), "You do not have access to the app");
+        }
+
+        final AbstractHerokuBuildStep step = new AbstractHerokuBuildStep(apiKey, existingAppWithoutAccess) {};
+
+        try {
+            step.getOrCreateApp(listener, api).getName();
+            fail();
+        } catch (HerokuJenkinsHandledException e){
+            assertStringContains(e.getMessage(), "No access to Heroku app '" + existingAppWithoutAccess);
+        }
     }
 
     public void testGetOrCreateApp_AlreadyExists() throws Exception {
