@@ -64,7 +64,7 @@ public class WorkspaceDeployment extends AbstractArtifactDeployment {
 
     @Override
     public boolean perform(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
-        listener.getLogger().println("DEPRECATED: Deploy Workspace will be removed from a future version of the Heroku plugin.");
+        listener.getLogger().println("DEPRECATED: Deploy Workspace may be removed or changed in a future version.");
         return super.perform(build, launcher, listener);
     }
 
