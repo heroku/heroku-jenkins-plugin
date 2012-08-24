@@ -26,19 +26,6 @@ All build steps also include the following fields:
 Buildsteps
 ==========
 
-Workspace Deployment
---------------------
-
-The `Deploy Workspace` build step deploys the entire Jenkins workspace directly to a Heroku app.
-
-If you wish to deploy only a subset of the workspace, include and exclude "glob" filters can be specified under advanced configuration.
-This can be helpful for only including artifacts and excluding things like source files, test results, and documentation.
-Glob patterns follow [ANT fileset patterns](http://ant.apache.org/manual/Types/fileset.html), like `**/*` or `**/*.java`. Multiple glob patterns can be comma-separated.
-
-The workspace is also expected to contain a [`Procfile`](https://devcenter.heroku.com/articles/procfile).
-The `Profile` location can be specified under advanced configuration.
-
-
 WAR Deployment
 --------------
 
@@ -116,6 +103,17 @@ Building & Installing from Source
 
 Changelog
 =========
+
+Version 0.7 (August 23, 2012)
+-----------------------------
+ - API Key field in Advanced section of build steps
+ - Send Feedback links in build step
+ - Improved error handling of authentication issues
+ - Standardization of build output and alignment with the Heroku CLI client
+ - Deprecated Workspace Deploy build step
+ - Changed to Jersey Client HTTP/JSON provider
+ - Upgraded to heroku-api 0.12
+
 
 Version 0.6 (July 27, 2012)
 ---------------------------
