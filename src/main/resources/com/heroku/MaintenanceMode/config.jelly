@@ -9,7 +9,7 @@
     </f:entry>
 
     <f:entry title="Mode" field="mode">
-        <f:booleanRadio true="Enabled" false="Disabled"/>
+        <f:booleanRadio true="On" false="Off"/>
     </f:entry>
 
     <f:advanced>
