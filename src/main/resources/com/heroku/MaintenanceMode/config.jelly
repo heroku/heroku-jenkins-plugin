@@ -1,5 +1,9 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
+    <f:entry>
+        <a href="https://docs.google.com/spreadsheet/viewform?formkey=dExWd1dtTy1LRlktSDVmYUpkbURGZUE6MQ#gid=0" target="_blank">Send Feedback</a>
+    </f:entry>
+
     <f:entry title="App Name" help="/plugin/heroku-jenkins-plugin/help-appName.html">
         <f:textbox/>
     </f:entry>
