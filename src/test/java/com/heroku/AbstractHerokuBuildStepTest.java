@@ -1,5 +1,6 @@
 package com.heroku;
 
+import com.heroku.api.HerokuAPI;
 import com.heroku.api.exception.RequestFailedException;
 import net.sf.json.JSONObject;
 
@@ -53,6 +54,23 @@ public class AbstractHerokuBuildStepTest extends BaseHerokuBuildStepTest {
         final AbstractHerokuBuildStep step = new AbstractHerokuBuildStep(null, appName) {
         };
         assertEquals(appName, step.getAppName());
+    }
+
+    public void testGetOrCreateApp_BadApiKey() throws Exception {
+        final String nonNullBadApiKey = "NON_NULL_BAD_API_KEY";
+        final HerokuAPI badApi = new HerokuAPI(api.getConnection(), nonNullBadApiKey);
+
+        final String newAppName = "test" + System.currentTimeMillis();
+        assertFalse("Precondition: App should not already exist", badApi.appExists(newAppName));
+
+        final AbstractHerokuBuildStep step = new AbstractHerokuBuildStep(nonNullBadApiKey, newAppName) {};
+
+        try {
+            step.getOrCreateApp(listener, badApi).getName();
+            fail();
+        } catch (HerokuJenkinsHandledException e){
+            assertStringContains(e.getMessage(), "No access to create Heroku app");
+        }
     }
 
     public void testGetOrCreateApp_AlreadyExists_WithoutAccess() throws Exception {
