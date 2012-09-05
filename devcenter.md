@@ -2,37 +2,42 @@ You can interact with Heroku directly from Jenkins using the Heroku Plugin. This
 
 ## Pre-Requisites
 * [Jenkins](http://jenkins-ci.org/) 1.400 or higher.
-* A Heroku account. [Sign up](https://api.heroku.com/signup) for an account.
+* A Heroku account. [Sign up](https://api.heroku.com/signup) for an account, if you don't have one.
 
 ## Installation
-1. In Jenkins, go to Manage Jenkins | Manage Plugins | Available.
-2. Choose the Heroku Plugin for Jenkins.
-3. Click Install.
+1. In Jenkins, go to **Manage Jenkins** | **Manage Plugins** | **Available**.
+2. Choose the **Heroku Plugin for Jenkins**.
+3. Click **Install**.
 4. Restart Jenkins.
 
 ## API Key Setup
 <div class="callout" markdown="1">
 It is recommended to create a special user for continuous integration. This will allow you to grant access to a subset of your apps and provide better auditability.
 </div>
-The plugin requires an API key to identify you to Heroku. It can be configured either globally or for individual build steps. It is recommended that you configure a global key, which will be used as the default, and override in individual build steps only if needed. If a global key is not configured, a key will have be configured in each build step.
+The plugin requires an API key to authenticate you with Heroku. It can be configured either globally or for individual build steps. It is recommended that you configure a global key, which will be used as the default, and then override in individual build steps if needed. If a global key is not configured, a key will have be configured in each build step.
 
-1. Find your Heroku API key on your [Heroku account page](https://api.heroku.com/account).
-2. In Jenkins, go to Manage Jenkins | Heroku.
-3. Enter your API key in the Default API Key field.
-4. Click Save.
+1. Find your Heroku API key on the [Heroku account page](https://api.heroku.com/account).
+2. In Jenkins, go to **Manage Jenkins** and find the **Heroku** section.
+3. Enter your API key in the **Default API Key** field.
+4. Click **Save**.
 
-To override the default API key in a specific build step, click the Advanced button and enter a different key.
+![Configuring the Default API Key](https://s3.amazonaws.com/heroku.devcenter/heroku_assets/images/64-typus_preview.jpg)
+
+To override the default API key in a specific build step, click the Advanced button in the step configuration.
 
 ## Example Job
-1. In Jenkins, click on New Job.
-2. Give the job a name and choose a type. Choose "Build a free-style software project" if you are not sure.
-3. In the Build section, click the Add Build Step button. You'll notice several Heroku operation you can perform. For example, if you want to run a one-off process on Heroku, choose "Heroku: Run Process". See the Build Steps section below for details about other build steps.
+1. In Jenkins, click on **New Job**.
+2. Give the job a name and choose a type. Choose **Build a free-style software project** if you are not sure.
+3. In the **Build** section, click the **Add Build Step** button. You'll notice several Heroku operations you can perform. For example, if you want to run a one-off process on Heroku, choose **Heroku: Run Process**. See the [Build Steps](#build-steps) section below for details about other build steps.
 4. After choosing a build step, specific configuration options will be shown. In this example of running a one-off process, you should see two fields:
- - App Name: The name of the Heroku app on which to run the process. If this app does not exist, it will be created.
- - Command:  A command to execute or process type that is present in your application’s Procfile. This could be something like a database migration, but in this example let's just enter `du` to see your app's disk usage.
-5. Click Save.
-6. Click Build Now to run the job
-7. After starting the job, it should appear in the Build History. Click on the job and then Console Output to see the job output, which should look something like this:
+    - **App Name**: The name of the Heroku app on which to run the process. If this app does not exist, it will be created.
+    - **Command**:  A command to execute or process type that is present in your application’s Procfile. This could be something like a database migration, but in this example let's just enter `du` to see your app's disk usage.
+
+    ![Configuring a one-off process](https://s3.amazonaws.com/heroku.devcenter/heroku_assets/images/63-typus_preview.jpg)
+
+5. Click **Save**.
+6. Click **Build Now** to run the job.
+7. After starting the job, it should appear in the **Build History**. Click on the job and then **Console Output** to see the job output, which should look something like this:
 
         === Starting Heroku: Run Process ===
         Running `du` on my-app... starting, run.1
@@ -48,30 +53,29 @@ This was a very simple example, but multiple build steps can be used consecutive
 
 ### WAR Deployment
 
-The `Deploy WAR Artifact` build step deploys a WAR file generated by your build directly to a Heroku app.
+Deploys a WAR file generated by your build directly to a Heroku app.
 
 To deploy a WAR file, first make sure your build is successfully creating a deployable WAR file.
 If you are using Maven with `<packaging>war</packaging>`, the `mvn package` command will output the WAR file into its `target` directory.
 Otherwise, create the WAR file in whatever way is approiate for your build.
 
-After the WAR file is created, add the `Heroku: Deploy WAR Artifact` build step to your under the Jenkins build configuration
+After the WAR file is created, add the **Heroku: Deploy WAR Artifact** build step to your under the Jenkins build configuration
 and specify the relative path to the WAR file created in a previous build step to deploy.
 
 ### Set Configuration
-The `Set Configuration` build step adds or updates [config vars](https://devcenter.heroku.com/articles/config-vars) to the specified app.
+Adds or updates [config vars](https://devcenter.heroku.com/articles/config-vars) to the app.
 
 ### Scale Process
-
-The `Scale Process` build step [scales](https://devcenter.heroku.com/articles/scaling) a process type to a specified quantity.
+[Scales](https://devcenter.heroku.com/articles/scaling) a process type to a specified quantity.
 
 ### Run Process
-The `Run Process` build step [runs a one-off process](https://devcenter.heroku.com/articles/cedar#oneoff_processes) on a dyno.
+[Runs a one-off process](https://devcenter.heroku.com/articles/cedar#oneoff_processes) on a dyno.
 
 ### Rollback
-The `Rollback` build step [rolls back](https://devcenter.heroku.com/articles/releases#rollback) to the previous release.
+[Rolls back](https://devcenter.heroku.com/articles/releases#rollback) to the previous release.
 
 ### Restart
-The `Restart` build step [restart](https://devcenter.heroku.com/articles/ps#process_restarts) the specified app.
+[Restarts](https://devcenter.heroku.com/articles/ps#process_restarts) the app.
 
 ### Maintenance Mode
-The `Maintenance Mode` build step [toggle maintenance mode](https://devcenter.heroku.com/articles/maintenance-mode) for a given app.
+[Toggles maintenance mode](https://devcenter.heroku.com/articles/maintenance-mode) for the  app.
