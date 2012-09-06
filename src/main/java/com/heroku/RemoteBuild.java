@@ -1,9 +1,9 @@
 package com.heroku;
 
-import com.herokuapp.janvil.Config;
-import com.herokuapp.janvil.EventSubscription;
-import com.herokuapp.janvil.Janvil;
-import com.herokuapp.janvil.Manifest;
+import com.heroku.janvil.Config;
+import com.heroku.janvil.EventSubscription;
+import com.heroku.janvil.Janvil;
+import com.heroku.janvil.Manifest;
 import hudson.*;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;

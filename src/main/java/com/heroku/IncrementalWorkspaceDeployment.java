@@ -2,10 +2,10 @@ package com.heroku;
 
 import com.heroku.api.App;
 import com.heroku.api.HerokuAPI;
-import com.herokuapp.janvil.Config;
-import com.herokuapp.janvil.EventSubscription;
-import com.herokuapp.janvil.Janvil;
-import com.herokuapp.janvil.Manifest;
+import com.heroku.janvil.Config;
+import com.heroku.janvil.EventSubscription;
+import com.heroku.janvil.Janvil;
+import com.heroku.janvil.Manifest;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
@@ -124,7 +124,7 @@ public class IncrementalWorkspaceDeployment extends AbstractHerokuBuildStep {
                     return false;
                 }
 
-                janvil.release(app.getName(), slugUrl);
+                janvil.release(app.getName(), slugUrl, "Jenkins"); // TODO: what should desc be?
 
                 return true;
             }

@@ -1,10 +1,9 @@
 package com.heroku;
 
-import com.google.common.base.Predicate;
-import com.google.common.collect.Maps;
-import com.heroku.api.*;
+import com.heroku.api.App;
+import com.heroku.api.HerokuAPI;
 import com.heroku.api.Release;
-import com.herokuapp.janvil.Janvil;
+import com.heroku.janvil.Janvil;
 import hudson.Extension;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
@@ -12,11 +11,7 @@ import hudson.model.BuildListener;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * @author Ryan Brainard
@@ -57,20 +52,11 @@ public class Promote extends AbstractHerokuBuildStep {
 
         final Release releaseBefore = currentRelease(api, targetApp);
         try {
-            // TODO: merge into one step to make one release and avoid rollback stuff and race conditions
-            // TODO: how to copy addons??
-            api.addConfig(targetApp.getName(), maskConfig(api));
-            final SlugInfo sourceSlug = getSourceSlug(api);
-
-            listener.getLogger().println("Pulled slug" + sourceSlug.getName());
-
-            try {
-                new URL(sourceSlug.getSlugUrl());
-            } catch (MalformedURLException e) {
-                listener.error("Invalid slug url: " + sourceSlug.getSlugUrl());
-                return false;
-            }
-            new Janvil(getEffectiveApiKey()).release(targetApp.getName(), sourceSlug.getSlugUrl());
+            new Janvil(getEffectiveApiKey()).copy(getSourceAppName(), getTargetAppName(), new Janvil.ReleaseDescriptionBuilder() {
+                public String buildDescription(String sourceAppName, String sourceReleaseName, String sourceCommit, String targetAppName) {
+                    return "Promote " + sourceAppName + " " + sourceReleaseName + (sourceCommit != null ? " " + sourceCommit : "");
+                }
+            });
         } catch (Exception e) {
             api.rollback(targetApp.getName(), releaseBefore.getName());
             throw new RuntimeException(e);
@@ -81,25 +67,10 @@ public class Promote extends AbstractHerokuBuildStep {
         return true;
     }
 
-    private SlugInfo getSourceSlug(HerokuAPI api) {
-        return api.getConnection().execute(new ReleasesSlugInfo(sourceAppName), getEffectiveApiKey());
-    }
-
-    private Map<String, String> maskConfig(HerokuAPI api) {
-        final Map<String,String> sourceConfig = api.listConfig(sourceAppName);
-        final Set<String> envMaskMap = MappingConverter.convert(envMask).keySet();
-        return Maps.filterKeys(sourceConfig, new Predicate<String>() {
-            public boolean apply(String input) {
-                return envMaskMap.contains(input);
-            }
-        });
-    }
-
     private Release currentRelease(HerokuAPI api, App targetApp) {
         final List<Release> releases = api.listReleases(targetApp.getName());
         return releases.get(releases.size() - 1);
     }
-
 
     @Override
     public ReleaseDescriptor getDescriptor() {

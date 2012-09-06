@@ -2,7 +2,7 @@ package com.heroku;
 
 import com.heroku.api.App;
 import com.heroku.api.HerokuAPI;
-import com.herokuapp.janvil.Janvil;
+import com.heroku.janvil.Janvil;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
@@ -55,7 +55,7 @@ public class Release extends AbstractHerokuBuildStep {
             return false;
         }
 
-        new Janvil(getEffectiveApiKey()).release(app.getName(), slugUrl);
+        new Janvil(getEffectiveApiKey()).release(app.getName(), slugUrl, "Jenkins"); //TODO: what should the desc be?
 
 
         final List<com.heroku.api.Release> releases = api.listReleases(app.getName());
