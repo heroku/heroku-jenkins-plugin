@@ -66,17 +66,12 @@
             <version>${com.heroku.api.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.heroku.api</groupId>
-            <artifactId>heroku-api-ext-releases</artifactId>
-            <version>${com.heroku.api.version}</version>
-        </dependency>
-        <dependency>
             <groupId>com.herokuapp.directto</groupId>
             <artifactId>direct-to-heroku-client</artifactId>
             <version>0.6-BETA</version>
         </dependency>
         <dependency>
-            <groupId>com.herokuapp.janvil</groupId>
+            <groupId>com.heroku.janvil</groupId>
             <artifactId>janvil</artifactId>
             <version>0.1-BETA-SNAPSHOT</version>
         </dependency>

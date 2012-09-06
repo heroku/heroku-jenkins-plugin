@@ -1,10 +1,10 @@
 package com.heroku;
 
 import com.heroku.api.App;
-import com.herokuapp.janvil.Config;
-import com.herokuapp.janvil.EventSubscription;
-import com.herokuapp.janvil.Janvil;
-import com.herokuapp.janvil.Manifest;
+import com.heroku.janvil.Config;
+import com.heroku.janvil.EventSubscription;
+import com.heroku.janvil.Janvil;
+import com.heroku.janvil.Manifest;
 import hudson.FilePath;
 import hudson.model.BuildListener;
 import hudson.remoting.VirtualChannel;
@@ -45,7 +45,6 @@ class AnvilDeployer implements FilePath.FileCallable<Boolean>, Serializable {
 
     public Boolean invoke(File baseDir, VirtualChannel channel) throws IOException, InterruptedException {
         final Janvil janvil = new Janvil(new Config(apiKey)
-                .setProtocol(Config.Protocol.HTTP)
                 .setConsumersUserAgent(userAgent)
                 .setEventSubscription(buildSubscriptions()));
 
@@ -61,14 +60,14 @@ class AnvilDeployer implements FilePath.FileCallable<Boolean>, Serializable {
 
         slugPushed[0] = false;
 
-        janvil.build(manifest, buildEnv, buildpack);
+        final String slugUrl = janvil.build(manifest, buildEnv, buildpack);
 
         if (!slugPushed[0]) {
             listener.error("Remote build failed. Aborting deployment.");
             return false;
         }
 
-        janvil.release(appName, manifest);
+        janvil.release(appName, slugUrl, "Jenkins"); // TODO: what should the description be?
 
         return true;
     }
