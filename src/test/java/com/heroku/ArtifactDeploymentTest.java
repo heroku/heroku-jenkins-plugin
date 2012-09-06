@@ -27,13 +27,6 @@ public class ArtifactDeploymentTest extends BaseHerokuBuildStepTest {
                     TarGzDeployment.class,
                     File.createTempFile("test", ".tar.gz"),
                     new File(ClassLoader.getSystemResource("Procfile").getFile())));
-
-            suite.addTest(new ArtifactDeploymentTest(
-                    WorkspaceDeployment.class,
-                    "**/*",
-                    "",
-                    new File(ClassLoader.getSystemResource("Procfile").getFile())));
-
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
