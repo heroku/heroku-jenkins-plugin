@@ -77,8 +77,7 @@ public final class HerokuPlugin extends Plugin {
     }
 
     enum Feature {
-        ANVIL,
-        APP_CLONE
+        ANVIL
     }
 
     boolean hasFeature(Feature feature) {
