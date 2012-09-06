@@ -1,10 +1,16 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
-    <f:entry title="API Key" field="apiKey">
-        <f:password/>
+    <f:entry>
+        <a href="https://docs.google.com/spreadsheet/viewform?formkey=dExWd1dtTy1LRlktSDVmYUpkbURGZUE6MQ#gid=0" target="_blank">Send Feedback</a>
     </f:entry>
 
     <f:entry title="App Name" field="appName">
         <f:textbox/>
     </f:entry>
+
+    <f:advanced>
+        <f:entry title="API Key" field="apiKey" help="/plugin/heroku-jenkins-plugin/help-apiKey.html">
+            <f:password/>
+        </f:entry>
+    </f:advanced>
 </j:jelly>
