@@ -24,6 +24,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 
+import static com.heroku.HerokuPlugin.Feature.ANVIL;
+
 /**
  * @author Ryan Brainard
  */
@@ -151,6 +153,11 @@ public class IncrementalWorkspaceDeployment extends AbstractHerokuBuildStep {
 
         public String getDisplayName() {
             return "Heroku: Deploy Workspace (Incremental)";
+        }
+
+        @Override
+        public boolean isApplicable(Class<? extends AbstractProject> jobType) {
+            return HerokuPlugin.get().hasFeature(ANVIL);
         }
 
         public FormValidation doCheckGlobIncludes(@AncestorInPath AbstractProject project, @QueryParameter String value) throws IOException {

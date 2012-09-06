@@ -15,6 +15,8 @@ import org.kohsuke.stapler.QueryParameter;
 
 import java.io.IOException;
 
+import static com.heroku.HerokuPlugin.Feature.APP_CLONE;
+
 /**
  * @author Ryan Brainard
  */
@@ -72,7 +74,7 @@ public class AppClone extends AbstractHerokuBuildStep {
 
         @Override
         public boolean isApplicable(Class<? extends AbstractProject> jobType) {
-            return false;
+            return HerokuPlugin.get().hasFeature(APP_CLONE);
         }
 
         public FormValidation doCheckTemplateAppName(@AncestorInPath AbstractProject project, @QueryParameter String templateAppName) throws IOException {

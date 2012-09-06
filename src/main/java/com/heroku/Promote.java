@@ -7,11 +7,14 @@ import com.heroku.janvil.Janvil;
 import hudson.Extension;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
+import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.io.IOException;
 import java.util.List;
+
+import static com.heroku.HerokuPlugin.Feature.ANVIL;
 
 /**
  * @author Ryan Brainard
@@ -82,6 +85,11 @@ public class Promote extends AbstractHerokuBuildStep {
 
         public String getDisplayName() {
             return "Heroku: Promote";
+        }
+
+        @Override
+        public boolean isApplicable(Class<? extends AbstractProject> jobType) {
+            return HerokuPlugin.get().hasFeature(ANVIL);
         }
     }
 }

@@ -27,6 +27,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import static com.heroku.HerokuPlugin.Feature.ANVIL;
+
 /*
  * @author Ryan Brainard
  */
@@ -157,7 +159,7 @@ public class RemoteBuild extends Builder {
 
         @Override
         public boolean isApplicable(Class<? extends AbstractProject> jobType) {
-            return true;
+            return HerokuPlugin.get().hasFeature(ANVIL);
         }
 
         public FormValidation doCheckBuildpackUrl(@AncestorInPath AbstractProject project, @QueryParameter String value) throws IOException {

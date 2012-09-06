@@ -75,4 +75,14 @@ public final class HerokuPlugin extends Plugin {
     String getPluginVersion() {
         return projectProperties.get("heroku-jenkins-plugin.version");
     }
+
+    enum Feature {
+        ANVIL,
+        APP_CLONE
+    }
+
+    boolean hasFeature(Feature feature) {
+        final String features = System.getProperty("com.heroku.jenkins.features");
+        return features != null && features.contains(feature.name());
+    }
 }
