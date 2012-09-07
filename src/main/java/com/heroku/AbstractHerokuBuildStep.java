@@ -13,7 +13,6 @@ import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import hudson.util.FormValidation;
 import hudson.util.Secret;
-import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 
 import java.io.IOException;
@@ -24,10 +23,16 @@ import java.net.HttpURLConnection;
  */
 abstract class AbstractHerokuBuildStep extends Builder {
 
+    private final boolean hasAppContext;
     private final Secret apiKey;
     private final String appName;
 
-    @DataBoundConstructor
+    AbstractHerokuBuildStep() {
+        this.apiKey = null;
+        this.appName = null;
+        this.hasAppContext = false;
+    }
+
     AbstractHerokuBuildStep(String apiKey, String appName) {
         if (appName == null || appName.trim().length() == 0) {
             throw new IllegalArgumentException("App name must be provided");
@@ -35,6 +40,7 @@ abstract class AbstractHerokuBuildStep extends Builder {
 
         this.apiKey = Secret.fromString(apiKey);
         this.appName = appName;
+        this.hasAppContext = true;
     }
 
     // Must override and delegate back to this method if using in config.jelly for a concrete task
@@ -109,11 +115,11 @@ abstract class AbstractHerokuBuildStep extends Builder {
     }
 
     @Override
-    public boolean perform(final AbstractBuild build, final Launcher launcher, final BuildListener listener) throws IOException, InterruptedException {
+    public final boolean perform(final AbstractBuild build, final Launcher launcher, final BuildListener listener) throws IOException, InterruptedException {
         listener.getLogger().println("\n=== Starting " + getDescriptor().getDisplayName() + " ===");
         try {
-            final HerokuAPI api = new HerokuAPI(getEffectiveApiKey());
-            final App app = getOrCreateApp(listener, api);
+            final HerokuAPI api = hasAppContext ? new HerokuAPI(getEffectiveApiKey()) : null;
+            final App app = hasAppContext ? getOrCreateApp(listener, api) : null;
             try {
                 final boolean result = perform(build, launcher, listener, api, app);
                 if (result) {

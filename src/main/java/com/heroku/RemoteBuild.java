@@ -1,5 +1,7 @@
 package com.heroku;
 
+import com.heroku.api.App;
+import com.heroku.api.HerokuAPI;
 import com.heroku.janvil.Config;
 import com.heroku.janvil.EventSubscription;
 import com.heroku.janvil.Janvil;
@@ -9,8 +11,6 @@ import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.remoting.VirtualChannel;
-import hudson.tasks.BuildStepDescriptor;
-import hudson.tasks.Builder;
 import hudson.util.DirScanner;
 import hudson.util.FileVisitor;
 import hudson.util.FormValidation;
@@ -32,7 +32,7 @@ import static com.heroku.HerokuPlugin.Feature.ANVIL;
 /*
  * @author Ryan Brainard
  */
-public class RemoteBuild extends Builder {
+public class RemoteBuild extends AbstractHerokuBuildStep {
 
     private final String buildpackUrl;
     private final String buildEnv;
@@ -42,6 +42,7 @@ public class RemoteBuild extends Builder {
 
     @DataBoundConstructor
     public RemoteBuild(String buildpackUrl, String buildEnv, String globIncludes, String globExcludes, boolean useCache) {
+        super();
         this.buildpackUrl = buildpackUrl;
         this.buildEnv = buildEnv;
         this.globIncludes = globIncludes;
@@ -70,7 +71,7 @@ public class RemoteBuild extends Builder {
     }
 
     @Override
-    public boolean perform(final AbstractBuild build, final Launcher launcher, final BuildListener listener) throws IOException, InterruptedException {
+    public boolean perform(final AbstractBuild build, final Launcher launcher, final BuildListener listener, HerokuAPI api, App app) throws IOException, InterruptedException {
         final String userAgent = new JenkinsUserAgentValueProvider().getLocalUserAgent();
 
         final URL slugUrl = build.getWorkspace().act(new FilePath.FileCallable<URL>() {
@@ -86,12 +87,19 @@ public class RemoteBuild extends Builder {
                                 .setEventSubscription(new EventSubscription<Janvil.Event>(Janvil.Event.class)
                                         .subscribe(Janvil.Event.DIFF_START, new EventSubscription.Subscriber<Janvil.Event>() {
                                             public void handle(Janvil.Event event, Object numTotalFiles) {
-                                                listener.getLogger().println("Workspace contains " + amt(numTotalFiles, "file") + "...");
+                                                listener.getLogger().println("Workspace contains " + amt(numTotalFiles, "file"));
                                             }
                                         })
                                         .subscribe(Janvil.Event.UPLOADS_START, new EventSubscription.Subscriber<Janvil.Event>() {
                                             public void handle(Janvil.Event event, Object numDiffFiles) {
+                                                if (numDiffFiles == Integer.valueOf(0)) return;
                                                 listener.getLogger().println("Uploading " + amt(numDiffFiles, "new file") + "...");
+                                            }
+                                        })
+                                        .subscribe(Janvil.Event.UPLOADS_END, new EventSubscription.Subscriber<Janvil.Event>() {
+                                            public void handle(Janvil.Event event, Object numDiffFiles) {
+                                                if (numDiffFiles == Integer.valueOf(0)) return;
+                                                listener.getLogger().println("Upload complete");
                                             }
                                         })
                                         .subscribe(Janvil.Event.BUILD_OUTPUT_LINE, new EventSubscription.Subscriber<Janvil.Event>() {
@@ -151,7 +159,7 @@ public class RemoteBuild extends Builder {
     }
 
     @Extension
-    public static class RemoteBuildDescriptor extends BuildStepDescriptor<Builder> {
+    public static class RemoteBuildDescriptor extends AbstractHerokuBuildStepDescriptor {
 
         public String getDisplayName() {
             return "Heroku: Remote Build";
