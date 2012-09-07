@@ -61,7 +61,7 @@ public class AbstractHerokuBuildStepTest extends BaseHerokuBuildStepTest {
         final HerokuAPI badApi = new HerokuAPI(api.getConnection(), nonNullBadApiKey);
 
         final String newAppName = "test" + System.currentTimeMillis();
-        assertFalse("Precondition: App should not already exist", badApi.appExists(newAppName));
+        assertFalse("Precondition: App should not already exist", api.appExists(newAppName));
 
         final AbstractHerokuBuildStep step = new AbstractHerokuBuildStep(nonNullBadApiKey, newAppName) {};
 
