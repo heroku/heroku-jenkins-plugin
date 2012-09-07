@@ -33,7 +33,7 @@
 
     <properties>
         <heroku-jenkins-plugin.version>${project.version}</heroku-jenkins-plugin.version>
-        <com.heroku.api.version>0.13-SNAPSHOT</com.heroku.api.version>
+        <com.heroku.api.version>0.13</com.heroku.api.version>
     </properties>
 
     <repositories>
