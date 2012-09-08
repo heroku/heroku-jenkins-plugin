@@ -27,8 +27,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import static com.heroku.HerokuPlugin.Feature.ANVIL;
-
 /*
  * @author Ryan Brainard
  */
@@ -82,8 +80,8 @@ public class RemoteBuild extends AbstractHerokuBuildStep {
                 final Janvil janvil = new Janvil(
                         new Config("")
                                 .setConsumersUserAgent(userAgent)
-                                .setReadMetadata(useCache)
-                                .setWriteMetadata(true)
+                                .setReadCacheUrl(useCache)
+                                .setWriteCacheUrl(true)
                                 .setEventSubscription(new EventSubscription<Janvil.Event>(Janvil.Event.class)
                                         .subscribe(Janvil.Event.DIFF_START, new EventSubscription.Subscriber<Janvil.Event>() {
                                             public void handle(Janvil.Event event, Object numTotalFiles) {
@@ -167,7 +165,7 @@ public class RemoteBuild extends AbstractHerokuBuildStep {
 
         @Override
         public boolean isApplicable(Class<? extends AbstractProject> jobType) {
-            return HerokuPlugin.get().hasFeature(ANVIL);
+            return false;
         }
 
         public FormValidation doCheckBuildpackUrl(@AncestorInPath AbstractProject project, @QueryParameter String value) throws IOException {

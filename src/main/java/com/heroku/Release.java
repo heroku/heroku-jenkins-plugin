@@ -17,8 +17,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
-import static com.heroku.HerokuPlugin.Feature.ANVIL;
-
 /**
  * @author Ryan Brainard
  */
@@ -84,7 +82,7 @@ public class Release extends AbstractHerokuBuildStep {
 
         @Override
         public boolean isApplicable(Class<? extends AbstractProject> jobType) {
-            return HerokuPlugin.get().hasFeature(ANVIL);
+            return false;
         }
     }
 }
