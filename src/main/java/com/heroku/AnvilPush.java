@@ -17,6 +17,7 @@ import org.kohsuke.stapler.QueryParameter;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Arrays;
@@ -91,113 +92,29 @@ public class AnvilPush extends AbstractHerokuBuildStep {
     }
 
     @Override
-    public boolean perform(final AbstractBuild build, final Launcher launcher, final BuildListener listener, HerokuAPI api, final App app) throws IOException, InterruptedException {
-        final String userAgent = new JenkinsUserAgentValueProvider().getLocalUserAgent();
-        final String userEmail = api.getUserInfo().getEmail();
-
-        return build.getWorkspace().child(baseDir).act(new FilePath.FileCallable<Boolean>() {
-            final Janvil janvil = new Janvil(config());
-
-            public Boolean invoke(File dir, VirtualChannel channel) throws IOException, InterruptedException {
-                final String slugUrl;
-                try {
-                    slugUrl = janvil.build(manifest(dir), resolveBuildEnv(), buildpackUrl);
-                } catch (JanvilBuildException e) {
-                    listener.error("A build error occurred: " + e.getExitStatus());
-                    return false;
-                }
-
-                janvil.release(app.getName(), slugUrl, resolveReleaseDesc());
-
-                return true;
-            }
-
-            private Manifest manifest(File dir) throws IOException {
-                final Manifest manifest = new Manifest(dir);
-                new DirScanner.Glob(globIncludes, globExcludes).scan(dir, new FileVisitor() {
-                    @Override
-                    public void visit(File f, String relativePath) throws IOException {
-                        if (f.isFile()) {
-                            manifest.add(f);
-                        }
-                    }
-                });
-                return manifest;
-            }
-
-            private Map<String, String> resolveBuildEnv() throws IOException, InterruptedException {
-                final Map<String, String> buildEnvMap = MappingConverter.convert(buildEnv);
-
-                // expand with jenkins env vars
-                final EnvVars jenkinsEnv = build.getEnvironment(listener);
-                for (Map.Entry<String, String> e : buildEnvMap.entrySet()) {
-                    e.setValue(jenkinsEnv.expand(e.getValue()));
-                }
-                return buildEnvMap;
-            }
-
-            private String resolveReleaseDesc() throws IOException, InterruptedException {
-                return build.getEnvironment(listener).expand(releaseDesc);
-            }
-
-            private Config config() {
-                return new Config(getEffectiveApiKey())
-                        .setConsumersUserAgent(userAgent)
-                        .setReadCacheUrl(useCache)
-                        .setWriteCacheUrl(true)
-                        .setWriteSlugUrl(false)
-                        .setHerokuApp(app.getName())
-                        .setHerokuUser(userEmail)
-                        .setEventSubscription(eventSubscription());
-            }
-
-            private EventSubscription<Janvil.Event> eventSubscription() {
-                return new EventSubscription<Janvil.Event>(Janvil.Event.class)
-                        .subscribe(Janvil.Event.DIFF_START, new EventSubscription.Subscriber<Janvil.Event>() {
-                            public void handle(Janvil.Event event, Object numTotalFiles) {
-                                listener.getLogger().println("Workspace contains " + amt(numTotalFiles, "file"));
-                            }
-                        })
-                        .subscribe(Janvil.Event.UPLOADS_START, new EventSubscription.Subscriber<Janvil.Event>() {
-                            public void handle(Janvil.Event event, Object numDiffFiles) {
-                                if (numDiffFiles == Integer.valueOf(0)) return;
-                                listener.getLogger().println("Uploading " + amt(numDiffFiles, "new file") + "...");
-                            }
-                        })
-                        .subscribe(Janvil.Event.UPLOADS_END, new EventSubscription.Subscriber<Janvil.Event>() {
-                            public void handle(Janvil.Event event, Object numDiffFiles) {
-                                if (numDiffFiles == Integer.valueOf(0)) return;
-                                listener.getLogger().println("Upload complete");
-                            }
-                        })
-                        .subscribe(Janvil.Event.BUILD_OUTPUT_LINE, new EventSubscription.Subscriber<Janvil.Event>() {
-                            public void handle(Janvil.Event event, Object line) {
-                                if (String.valueOf(line).contains("Success, slug is ")) return;
-                                listener.getLogger().println(line);
-                            }
-                        })
-                        .subscribe(Janvil.Event.RELEASE_START, new EventSubscription.Subscriber<Janvil.Event>() {
-                            public void handle(Janvil.Event event, Object data) {
-                                listener.getLogger().println("Releasing to " + app.getName() + "...");
-                            }
-                        })
-                        .subscribe(Janvil.Event.RELEASE_END, new EventSubscription.Subscriber<Janvil.Event>() {
-                            public void handle(Janvil.Event event, Object version) {
-                                listener.getLogger().println("Push complete, " + version + " | " + app.getWebUrl());
-                            }
-                        });
-            }
-        });
+    public boolean perform(AbstractBuild build, Launcher launcher, BuildListener listener, HerokuAPI api, App app) throws IOException, InterruptedException {
+        return build.getWorkspace().child(baseDir).act(createRemoteCallable(build, listener, api, app));
     }
 
-    private static String amt(Object qty, String counter) {
-        final double num = Double.valueOf(String.valueOf(qty));
-        final String s = qty + " " + counter;
-        if (num == 1) {
-            return s;
-        } else {
-            return s + "s";
-        }
+    /**
+     * Bridge between perform() instance method and RemoteCallable serialization, static class.
+     * Resolves all non-serializable instance data to create RemoteCallable
+     */
+    RemoteCallable createRemoteCallable(AbstractBuild build, BuildListener listener, HerokuAPI api, App app) throws IOException, InterruptedException {
+        return new RemoteCallable(
+                build.getEnvironment(listener),
+                listener,
+                app,
+                getEffectiveApiKey(),
+                new JenkinsUserAgentValueProvider().getLocalUserAgent(),
+                api.getUserInfo().getEmail(),
+                buildpackUrl,
+                globIncludes,
+                globExcludes,
+                buildEnv,
+                releaseDesc,
+                useCache
+        );
     }
 
     @Override
@@ -252,6 +169,142 @@ public class AnvilPush extends AbstractHerokuBuildStep {
 
         public FormValidation doCheckGlobIncludes(@AncestorInPath AbstractProject project, @QueryParameter String value) throws IOException {
             return FilePath.validateFileMask(project.getSomeWorkspace(), value);
+        }
+    }
+
+    /**
+     * A serializable, immutable payload for the push task.
+     * Separated from containing class and environment to allow it to be run on remote slaves without trying to serialize the world.
+     */
+    static class RemoteCallable implements FilePath.FileCallable<Boolean>, Serializable {
+        private final EnvVars jenkinsEnv;
+        private final BuildListener listener;
+        private final App app;
+        private final String effectiveApiKey;
+        private final String userAgent;
+        private final String userEmail;
+        private String buildpackUrl;
+        private String globIncludes;
+        private String globExcludes;
+        private String buildEnv;
+        private String releaseDesc;
+        private boolean useCache;
+
+        RemoteCallable(EnvVars jenkinsEnv, BuildListener listener, App app, String effectiveApiKey, String userAgent, String userEmail,
+                       String buildpackUrl, String globIncludes, String globExcludes, String buildEnv, String releaseDesc, boolean useCache) {
+            this.jenkinsEnv = jenkinsEnv;
+            this.listener = listener;
+            this.app = app;
+            this.effectiveApiKey = effectiveApiKey;
+            this.userAgent = userAgent;
+            this.userEmail = userEmail;
+            this.buildpackUrl = buildpackUrl;
+            this.globIncludes = globIncludes;
+            this.globExcludes = globExcludes;
+            this.buildEnv = buildEnv;
+            this.releaseDesc = releaseDesc;
+            this.useCache = useCache;
+        }
+
+        public Boolean invoke(File dir, VirtualChannel channel) throws IOException, InterruptedException {
+            final Janvil janvil = new Janvil(config());
+
+            final String slugUrl;
+            try {
+                slugUrl = janvil.build(manifest(dir), resolveBuildEnv(), buildpackUrl);
+            } catch (JanvilBuildException e) {
+                listener.error("A build error occurred: " + e.getExitStatus());
+                return false;
+            }
+
+            janvil.release(app.getName(), slugUrl, resolveReleaseDesc());
+
+            return true;
+        }
+
+        Manifest manifest(File dir) throws IOException {
+            final Manifest manifest = new Manifest(dir);
+            new DirScanner.Glob(globIncludes, globExcludes).scan(dir, new FileVisitor() {
+                @Override
+                public void visit(File f, String relativePath) throws IOException {
+                    if (f.isFile()) {
+                        manifest.add(f);
+                    }
+                }
+            });
+            return manifest;
+        }
+
+        Map<String, String> resolveBuildEnv() throws IOException, InterruptedException {
+            final Map<String, String> buildEnvMap = MappingConverter.convert(buildEnv);
+
+            // expand with jenkins env vars
+            for (Map.Entry<String, String> e : buildEnvMap.entrySet()) {
+                e.setValue(jenkinsEnv.expand(e.getValue()));
+            }
+            return buildEnvMap;
+        }
+
+        String resolveReleaseDesc() throws IOException, InterruptedException {
+            return jenkinsEnv.expand(releaseDesc);
+        }
+
+        Config config() {
+            return new Config(effectiveApiKey)
+                    .setConsumersUserAgent(userAgent)
+                    .setReadCacheUrl(useCache)
+                    .setWriteCacheUrl(true)
+                    .setWriteSlugUrl(false)
+                    .setHerokuApp(app.getName())
+                    .setHerokuUser(userEmail)
+                    .setEventSubscription(eventSubscription());
+        }
+
+        EventSubscription<Janvil.Event> eventSubscription() {
+            return new EventSubscription<Janvil.Event>(Janvil.Event.class)
+                    .subscribe(Janvil.Event.DIFF_START, new EventSubscription.Subscriber<Janvil.Event>() {
+                        public void handle(Janvil.Event event, Object numTotalFiles) {
+                            listener.getLogger().println("Workspace contains " + amt(numTotalFiles, "file"));
+                        }
+                    })
+                    .subscribe(Janvil.Event.UPLOADS_START, new EventSubscription.Subscriber<Janvil.Event>() {
+                        public void handle(Janvil.Event event, Object numDiffFiles) {
+                            if (numDiffFiles == Integer.valueOf(0)) return;
+                            listener.getLogger().println("Uploading " + amt(numDiffFiles, "new file") + "...");
+                        }
+                    })
+                    .subscribe(Janvil.Event.UPLOADS_END, new EventSubscription.Subscriber<Janvil.Event>() {
+                        public void handle(Janvil.Event event, Object numDiffFiles) {
+                            if (numDiffFiles == Integer.valueOf(0)) return;
+                            listener.getLogger().println("Upload complete");
+                        }
+                    })
+                    .subscribe(Janvil.Event.BUILD_OUTPUT_LINE, new EventSubscription.Subscriber<Janvil.Event>() {
+                        public void handle(Janvil.Event event, Object line) {
+                            if (String.valueOf(line).contains("Success, slug is ")) return;
+                            listener.getLogger().println(line);
+                        }
+                    })
+                    .subscribe(Janvil.Event.RELEASE_START, new EventSubscription.Subscriber<Janvil.Event>() {
+                        public void handle(Janvil.Event event, Object data) {
+                            listener.getLogger().println("Releasing to " + app.getName() + "...");
+                        }
+                    })
+                    .subscribe(Janvil.Event.RELEASE_END, new EventSubscription.Subscriber<Janvil.Event>() {
+                        public void handle(Janvil.Event event, Object version) {
+                            listener.getLogger().println("Push complete, " + version + " | " + app.getWebUrl());
+                        }
+                    });
+        }
+
+        String amt(Object qty, String counter) {
+            final double num = Double.valueOf(String.valueOf(qty));
+            final String s = qty + " " + counter;
+            if (num == 1) {
+                return s;
+            } else {
+                return s + "s";
+            }
         }
     }
 }
