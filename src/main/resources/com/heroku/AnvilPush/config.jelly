@@ -18,7 +18,7 @@
         </f:entry>
 
         <f:entry title="Release Description" field="releaseDesc">
-            <f:textbox default="Jenkins Push $${JOB_NAME} $${BUILD_NUMBER}"/>
+            <f:textbox default="Jenkins Push $${JOB_NAME} #$${BUILD_NUMBER}"/>
         </f:entry>
 
         <f:entry title="Base Directory" field="baseDir">
