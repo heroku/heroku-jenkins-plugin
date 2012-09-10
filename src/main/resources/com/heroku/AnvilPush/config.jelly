@@ -8,29 +8,29 @@
         <f:textbox/>
     </f:entry>
 
-    <f:entry title="Buildpack URL" field="buildpackUrl">
-        <f:textbox/>
-    </f:entry>
-
     <f:advanced>
         <f:entry title="API Key" field="apiKey" help="/plugin/heroku-jenkins-plugin/help-apiKey.html">
             <f:password/>
         </f:entry>
 
-        <f:entry title="Release Description" field="releaseDesc">
-            <f:textbox default="Push from Jenkins"/>
+        <f:entry title="Buildpack URL" field="buildpackUrl">
+            <f:textbox/>
         </f:entry>
 
-        <f:entry title="Base Dir" field="baseDir">
-            <f:textbox default="."/>
+        <f:entry title="Release Description" field="releaseDesc">
+            <f:textbox default="Jenkins Push $${JOB_NAME} $${BUILD_NUMBER}"/>
+        </f:entry>
+
+        <f:entry title="Base Directory" field="baseDir">
+            <f:textbox/>
         </f:entry>
 
         <f:entry title="Includes" field="globIncludes">
-            <f:textbox default="**/*"/>
+            <f:textbox default="**"/>
         </f:entry>
 
         <f:entry title="Excludes" field="globExcludes">
-            <f:textbox default=".git/**"/>
+            <f:textbox default=".anvil/**, .git/**, .svn/**"/>
         </f:entry>
 
         <f:entry title="Build Environment" field="buildEnv">

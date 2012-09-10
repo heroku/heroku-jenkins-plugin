@@ -1,5 +1,2 @@
-Remotely builds the workspace on Heroku with a given buildpack and downloads results back to the workspace.
-If the Buildpack URL is not provided, remote auto-detection will be attempted based on the contents of your workspace.
-See advanced options for configuring the build environment, caching, and including and excluding certain files.
-Note, this build step does not release the build results to Heroku.
-If you wish to release the results, use the Workspace Deploy build step after this step completes.
+Pushes the Jenkins workspace to Heroku to be built and released to the specified app in a manner similar to <pre>git push heroku master</pre>.
+See advanced options for configuring the buildpack, environment, caching, and including and excluding certain files.

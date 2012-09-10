@@ -101,13 +101,13 @@ public class AnvilPush extends AbstractHerokuBuildStep {
             public Boolean invoke(File dir, VirtualChannel channel) throws IOException, InterruptedException {
                 final String slugUrl;
                 try {
-                    slugUrl = janvil.build(manifest(dir), buildEnv(), buildpackUrl);
+                    slugUrl = janvil.build(manifest(dir), resolveBuildEnv(), buildpackUrl);
                 } catch (JanvilBuildException e) {
                     listener.error("A build error occurred: " + e.getExitStatus());
                     return false;
                 }
 
-                janvil.release(app.getName(), slugUrl, releaseDesc);
+                janvil.release(app.getName(), slugUrl, resolveReleaseDesc());
 
                 return true;
             }
@@ -125,7 +125,7 @@ public class AnvilPush extends AbstractHerokuBuildStep {
                 return manifest;
             }
 
-            private Map<String, String> buildEnv() throws IOException, InterruptedException {
+            private Map<String, String> resolveBuildEnv() throws IOException, InterruptedException {
                 final Map<String, String> buildEnvMap = MappingConverter.convert(buildEnv);
 
                 // expand with jenkins env vars
@@ -134,6 +134,10 @@ public class AnvilPush extends AbstractHerokuBuildStep {
                     e.setValue(jenkinsEnv.expand(e.getValue()));
                 }
                 return buildEnvMap;
+            }
+
+            private String resolveReleaseDesc() throws IOException, InterruptedException {
+                return build.getEnvironment(listener).expand(releaseDesc);
             }
 
             private Config config() {
@@ -242,11 +246,11 @@ public class AnvilPush extends AbstractHerokuBuildStep {
             }
         }
 
-        public FormValidation doCheckGlobIncludes(@AncestorInPath AbstractProject project, @QueryParameter String value) throws IOException {
+        public FormValidation doCheckBaseDir(@AncestorInPath AbstractProject project, @QueryParameter String value) throws IOException {
             return FilePath.validateFileMask(project.getSomeWorkspace(), value);
         }
 
-        public FormValidation doCheckGlobExcludes(@AncestorInPath AbstractProject project, @QueryParameter String value) throws IOException {
+        public FormValidation doCheckGlobIncludes(@AncestorInPath AbstractProject project, @QueryParameter String value) throws IOException {
             return FilePath.validateFileMask(project.getSomeWorkspace(), value);
         }
     }
