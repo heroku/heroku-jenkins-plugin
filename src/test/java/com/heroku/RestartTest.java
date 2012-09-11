@@ -10,6 +10,7 @@ import org.apache.commons.io.FileUtils;
 public class RestartTest extends BaseHerokuBuildStepTest {
 
     public void testRestart() throws Exception {
+        api.scaleProcess(appName, "web", 1);
         final int elapsedBefore = api.listProcesses(appName).get(0).getElapsed();
 
         FreeStyleProject project = createFreeStyleProject();
@@ -19,7 +20,15 @@ public class RestartTest extends BaseHerokuBuildStepTest {
         String logs = FileUtils.readFileToString(build.getLogFile());
         assertTrue(logs.contains("Restarting " + appName));
 
-        final int elapsedAfter = api.listProcesses(appName).get(0).getElapsed();
-        assertTrue(elapsedAfter < elapsedBefore);
+        assertRestart(elapsedBefore);
+    }
+
+    private void assertRestart(int elapsedBefore) throws InterruptedException {
+        for (int i = 0; i < 5; i++) {
+            final int elapsedAfter = api.listProcesses(appName).get(0).getElapsed();
+            if (elapsedAfter < elapsedBefore) return;
+            Thread.sleep(5000);
+        }
+        fail("App should restart within reasonable time frame");
     }
 }
