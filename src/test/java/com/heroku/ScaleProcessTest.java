@@ -1,5 +1,6 @@
 package com.heroku;
 
+import com.heroku.api.App;
 import com.heroku.api.Proc;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
@@ -16,22 +17,26 @@ import java.util.Set;
 public class ScaleProcessTest extends BaseHerokuBuildStepTest {
 
     public void testPerform() throws Exception {
-        FreeStyleProject project = createFreeStyleProject();
+        runWithNewApp(new AppRunnable() {
+            public void run(App app) throws Exception {
+                FreeStyleProject project = createFreeStyleProject();
 
-        final String processType = "web";
-        final int orgQty = getProcessesByType().get(processType).size();
-        final int scaleToZero = 0;
-        assertNotSame(orgQty, scaleToZero);
+                final String processType = "web";
+                final int orgQty = getProcessesByType().get(processType).size();
+                final int scaleToZero = 0;
+                assertNotSame(orgQty, scaleToZero);
 
-        try {
-            project.getBuildersList().add(new ScaleProcess(apiKey, appName, processType, scaleToZero));
-            FreeStyleBuild build = project.scheduleBuild2(0).get();
-            String logs = FileUtils.readFileToString(build.getLogFile());
+                try {
+                    project.getBuildersList().add(new ScaleProcess(apiKey, appName, processType, scaleToZero));
+                    FreeStyleBuild build = project.scheduleBuild2(0).get();
+                    String logs = FileUtils.readFileToString(build.getLogFile());
 
-            assertNull(logs, getProcessesByType().get(processType));
-        } finally {
-            api.scaleProcess(appName, processType, orgQty);
-        }
+                    assertNull(logs, getProcessesByType().get(processType));
+                } finally {
+                    api.scaleProcess(appName, processType, orgQty);
+                }
+            }
+        });
     }
 
     private Map<String, Set<Proc>> getProcessesByType() {
