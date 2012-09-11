@@ -9,7 +9,7 @@ import org.apache.commons.io.FileUtils;
  */
 public class RestartTest extends BaseHerokuBuildStepTest {
 
-    public void testRestart() throws Exception {
+    public void testPerform() throws Exception {
         api.scaleProcess(appName, "web", 1);
         final int elapsedBefore = api.listProcesses(appName).get(0).getElapsed();
 

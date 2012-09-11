@@ -9,7 +9,7 @@ import org.apache.commons.io.FileUtils;
  */
 public class RunProcessTest extends BaseHerokuBuildStepTest {
 
-    public void testRunProcess() throws Exception {
+    public void testPerform() throws Exception {
         FreeStyleProject project = createFreeStyleProject();
         project.getBuildersList().add(new RunProcess(apiKey, appName, "pwd"));
 

@@ -8,7 +8,7 @@ import hudson.model.FreeStyleProject;
  */
 public class MaintenanceModeTest extends BaseHerokuBuildStepTest {
 
-    public void testToggleMaintenanceMode() throws Exception {
+    public void testPerform() throws Exception {
         final FreeStyleProject project = createFreeStyleProject();
 
         runWithNewApp(new AppRunnable() {

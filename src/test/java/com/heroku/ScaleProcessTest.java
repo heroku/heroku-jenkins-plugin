@@ -15,7 +15,7 @@ import java.util.Set;
  */
 public class ScaleProcessTest extends BaseHerokuBuildStepTest {
 
-    public void testRunProcess() throws Exception {
+    public void testPerform() throws Exception {
         FreeStyleProject project = createFreeStyleProject();
 
         final String processType = "web";

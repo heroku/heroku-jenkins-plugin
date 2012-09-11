@@ -11,7 +11,7 @@ import java.io.*;
  */
 public class AnvilPushTest extends BaseHerokuBuildStepTest {
 
-    public void testPushDefault() throws Exception {
+    public void testPerform() throws Exception {
         FreeStyleProject project = createFreeStyleProject();
         project.scheduleBuild2(0).get();
         project.getSomeWorkspace().child("Procfile").copyFrom(ClassLoader.getSystemResource("Procfile"));
@@ -25,7 +25,7 @@ public class AnvilPushTest extends BaseHerokuBuildStepTest {
         assertTrue(logs.contains("Push complete"));
     }
 
-    public void testPushSerialization() throws Exception {
+    public void testRemoteCallableSerialization() throws Exception {
         FreeStyleProject project = createFreeStyleProject();
         FreeStyleBuild build = project.scheduleBuild2(0).get();
 

@@ -12,7 +12,7 @@ import java.util.Set;
  */
 public class ConfigAddTest extends BaseHerokuBuildStepTest {
 
-    public void testConfigAdd() throws Exception {
+    public void testPerform() throws Exception {
         // clean up config
         for (Map.Entry<String, String> c : api.listConfig(appName).entrySet()) {
             api.removeConfig(appName, c.getKey());
