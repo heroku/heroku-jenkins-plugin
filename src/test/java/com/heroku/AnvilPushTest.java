@@ -18,7 +18,7 @@ public class AnvilPushTest extends BaseHerokuBuildStepTest {
                 project.scheduleBuild2(0).get();
                 project.getSomeWorkspace().child("Procfile").copyFrom(ClassLoader.getSystemResource("Procfile"));
 
-                project.getBuildersList().add(new AnvilPush(apiKey, appName, "", "", "TEST", "", "", "", false));
+                project.getBuildersList().add(new AnvilPush(apiKey, app.getName(), "", "", "TEST", "", "", "", false));
                 FreeStyleBuild build = project.scheduleBuild2(0).get();
 
                 String logs = FileUtils.readFileToString(build.getLogFile());
@@ -38,8 +38,8 @@ public class AnvilPushTest extends BaseHerokuBuildStepTest {
                 final BuildListener emptyBuildListener = new NullBuildListener();
 
                 final AnvilPush.RemoteCallable pushRemoteCallable =
-                        new AnvilPush(apiKey, appName, "", "", "TEST", "", "", "", false)
-                                .createRemoteCallable(build, emptyBuildListener, api, new App().named(appName));
+                        new AnvilPush(apiKey, app.getName(), "", "", "TEST", "", "", "", false)
+                                .createRemoteCallable(build, emptyBuildListener, api, app);
 
                 final ByteArrayOutputStream serialization = new ByteArrayOutputStream();
                 final ObjectOutputStream oos = new ObjectOutputStream(serialization);
