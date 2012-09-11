@@ -12,39 +12,47 @@ import java.io.*;
 public class AnvilPushTest extends BaseHerokuBuildStepTest {
 
     public void testPerform() throws Exception {
-        FreeStyleProject project = createFreeStyleProject();
-        project.scheduleBuild2(0).get();
-        project.getSomeWorkspace().child("Procfile").copyFrom(ClassLoader.getSystemResource("Procfile"));
+        runWithNewApp(new AppRunnable() {
+            public void run(App app) throws Exception {
+                FreeStyleProject project = createFreeStyleProject();
+                project.scheduleBuild2(0).get();
+                project.getSomeWorkspace().child("Procfile").copyFrom(ClassLoader.getSystemResource("Procfile"));
 
-        project.getBuildersList().add(new AnvilPush(apiKey, appName, "", "", "TEST", "", "", "", false));
-        FreeStyleBuild build = project.scheduleBuild2(0).get();
+                project.getBuildersList().add(new AnvilPush(apiKey, appName, "", "", "TEST", "", "", "", false));
+                FreeStyleBuild build = project.scheduleBuild2(0).get();
 
-        String logs = FileUtils.readFileToString(build.getLogFile());
+                String logs = FileUtils.readFileToString(build.getLogFile());
 
-        assertTrue(logs.contains("Workspace contains"));
-        assertTrue(logs.contains("Push complete"));
+                assertTrue(logs.contains("Workspace contains"));
+                assertTrue(logs.contains("Push complete"));
+            }
+        });
     }
 
     public void testRemoteCallableSerialization() throws Exception {
-        FreeStyleProject project = createFreeStyleProject();
-        FreeStyleBuild build = project.scheduleBuild2(0).get();
+        runWithNewApp(new AppRunnable() {
+            public void run(App app) throws Exception {
+                FreeStyleProject project = createFreeStyleProject();
+                FreeStyleBuild build = project.scheduleBuild2(0).get();
 
-        final BuildListener emptyBuildListener = new NullBuildListener();
+                final BuildListener emptyBuildListener = new NullBuildListener();
 
-        final AnvilPush.RemoteCallable pushRemoteCallable =
-                new AnvilPush(apiKey, appName, "", "", "TEST", "", "", "", false)
-                        .createRemoteCallable(build, emptyBuildListener, api, new App().named(appName));
+                final AnvilPush.RemoteCallable pushRemoteCallable =
+                        new AnvilPush(apiKey, appName, "", "", "TEST", "", "", "", false)
+                                .createRemoteCallable(build, emptyBuildListener, api, new App().named(appName));
 
-        final ByteArrayOutputStream serialization = new ByteArrayOutputStream();
-        final ObjectOutputStream oos = new ObjectOutputStream(serialization);
-        oos.writeObject(pushRemoteCallable);
-        oos.close();
+                final ByteArrayOutputStream serialization = new ByteArrayOutputStream();
+                final ObjectOutputStream oos = new ObjectOutputStream(serialization);
+                oos.writeObject(pushRemoteCallable);
+                oos.close();
 
-        ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(serialization.toByteArray()));
-        final AnvilPush.RemoteCallable unserializedPushRemoteCallable = (AnvilPush.RemoteCallable) ois.readObject();
-        ois.close();
+                ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(serialization.toByteArray()));
+                final AnvilPush.RemoteCallable unserializedPushRemoteCallable = (AnvilPush.RemoteCallable) ois.readObject();
+                ois.close();
 
-        build.getWorkspace().act(unserializedPushRemoteCallable);
+                build.getWorkspace().act(unserializedPushRemoteCallable);
+            }
+        });
     }
 
 }
