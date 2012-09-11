@@ -12,19 +12,17 @@ import java.io.*;
 public class AnvilPushTest extends BaseHerokuBuildStepTest {
 
     public void testPushDefault() throws Exception {
-        String logs = run(new AnvilPush(apiKey, appName, "", "", "TEST", "", "", "", false));
+        FreeStyleProject project = createFreeStyleProject();
+        project.scheduleBuild2(0).get();
+        project.getSomeWorkspace().child("Procfile").copyFrom(ClassLoader.getSystemResource("Procfile"));
+
+        project.getBuildersList().add(new AnvilPush(apiKey, appName, "", "", "TEST", "", "", "", false));
+        FreeStyleBuild build = project.scheduleBuild2(0).get();
+
+        String logs = FileUtils.readFileToString(build.getLogFile());
 
         assertTrue(logs.contains("Workspace contains"));
         assertTrue(logs.contains("Push complete"));
-    }
-
-     private String run(AnvilPush push) throws Exception {
-        FreeStyleProject project = createFreeStyleProject();
-        project.getBuildersList().add(push);
-
-        FreeStyleBuild build = project.scheduleBuild2(0).get();
-
-        return FileUtils.readFileToString(build.getLogFile());
     }
 
     public void testPushSerialization() throws Exception {
