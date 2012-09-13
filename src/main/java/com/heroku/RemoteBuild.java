@@ -81,6 +81,7 @@ public class RemoteBuild extends AbstractHerokuBuildStep {
                         new Config("")
                                 .setConsumersUserAgent(userAgent)
                                 .setReadCacheUrl(useCache)
+                                .setWriteSlugUrl(true)
                                 .setWriteCacheUrl(true)
                                 .setEventSubscription(new EventSubscription<Janvil.Event>(Janvil.Event.class)
                                         .subscribe(Janvil.Event.DIFF_START, new EventSubscription.Subscriber<Janvil.Event>() {
