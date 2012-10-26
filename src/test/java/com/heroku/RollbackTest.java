@@ -15,7 +15,7 @@ import java.util.regex.Pattern;
  */
 public class RollbackTest extends BaseHerokuBuildStepTest {
 
-    public void testPerform() throws Exception {
+    public void testRollback() throws Exception {
         // TODO: add some actual releases if people are using a new app
         final List<Release> releasesBefore = api.listReleases(appName);
         final Release releaseBefore = releasesBefore.get(releasesBefore.size() - 1);
@@ -29,22 +29,6 @@ public class RollbackTest extends BaseHerokuBuildStepTest {
         final Release afterRelease = last(releasesAfter);
         final int releaseBeforeLast = v(releaseBefore) - 1;
         assertEquals("Rollback to v" + releaseBeforeLast, afterRelease.getDescription());
-    }
-
-    public void testPerform_NewApp() throws Exception {
-        runWithNewApp(new AppRunnable() {
-            public void run(App app) throws Exception {
-                assertEquals("Precondition: Should only have one release", 1, api.listReleases(app.getName()).size());
-
-                FreeStyleProject project = createFreeStyleProject();
-                project.getBuildersList().add(new Rollback(apiKey, app.getName()));
-                final FreeStyleBuild build = project.scheduleBuild2(0).get();
-                String logs = FileUtils.readFileToString(build.getLogFile());
-
-                assertStringContains(logs, app.getName() + " does not have a release to rollback.");
-                assertEquals("Should still only have one release", 1, api.listReleases(app.getName()).size());
-            }
-        });
     }
 
     private int v(Release release) {
