@@ -104,6 +104,10 @@ Building & Installing from Source
 Changelog
 =========
 
+Version 0.7.1 (October 28, 2012)
+--------------------------------
+ - Fixed [issue](https://github.com/heroku/heroku-jenkins-plugin/issues/14) with app name not appearing in Maintenance Mode build step
+
 Version 0.7 (August 23, 2012)
 -----------------------------
  - API Key field in Advanced section of build steps
@@ -113,7 +117,6 @@ Version 0.7 (August 23, 2012)
  - Deprecated Workspace Deploy build step
  - Changed to Jersey Client HTTP/JSON provider
  - Upgraded to heroku-api 0.12
-
 
 Version 0.6 (July 27, 2012)
 ---------------------------
