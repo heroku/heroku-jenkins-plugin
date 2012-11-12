@@ -218,7 +218,7 @@ public class AnvilPush extends AbstractHerokuBuildStep {
                 return false;
             }
 
-            janvil.release(app.getName(), slugUrl, resolveReleaseDesc());
+            janvil.release(app.getName(), slugUrl, resolveReleaseDesc(), resolveCommitHead());
 
             return true;
         }
@@ -248,6 +248,10 @@ public class AnvilPush extends AbstractHerokuBuildStep {
 
         String resolveReleaseDesc() throws IOException, InterruptedException {
             return jenkinsEnv.expand(releaseDesc);
+        }
+
+        String resolveCommitHead() throws IOException, InterruptedException {
+            return Util.fixEmptyAndTrim(jenkinsEnv.expand("${GIT_COMMIT}"));
         }
 
         Config config() {
@@ -293,7 +297,7 @@ public class AnvilPush extends AbstractHerokuBuildStep {
                     })
                     .subscribe(Janvil.Event.RELEASE_END, new EventSubscription.Subscriber<Janvil.Event>() {
                         public void handle(Janvil.Event event, Object version) {
-                            listener.getLogger().println("Push complete, " + version + " | " + app.getWebUrl());
+                            listener.getLogger().println("Done, " + version + " | " + app.getWebUrl());
                         }
                     });
         }
