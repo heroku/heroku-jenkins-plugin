@@ -49,13 +49,14 @@ public class Promote extends AbstractHerokuBuildStep {
 
     @Override
     protected boolean perform(AbstractBuild build, Launcher launcher, final BuildListener listener, HerokuAPI api, final App targetApp) throws IOException, InterruptedException {
-        final Janvil janvil = new Janvil(new Config(getEffectiveApiKey()).
-            setEventSubscription(new EventSubscription<Janvil.Event>(Event.class)
-                .subscribe(PROMOTE_END, new EventSubscription.Subscriber<Janvil.Event>() {
-                    public void handle(Event event, Object version) {
-                        listener.getLogger().println("Done, " + version + " | " + targetApp.getWebUrl());
-                    }
-                })));
+        final Janvil janvil = new Janvil(new Config(getEffectiveApiKey())
+            .setConsumersUserAgent(new JenkinsUserAgentValueProvider().getLocalUserAgent())
+            .setEventSubscription(new EventSubscription<Janvil.Event>(Event.class)
+                    .subscribe(PROMOTE_END, new EventSubscription.Subscriber<Janvil.Event>() {
+                        public void handle(Event event, Object version) {
+                            listener.getLogger().println("Done, " + version + " | " + targetApp.getWebUrl());
+                        }
+                    })));
 
         final List<String> downstreams = janvil.downstreams(getSourceAppName());
         if (downstreams.isEmpty()) {
