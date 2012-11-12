@@ -24,7 +24,7 @@ public class AnvilPushTest extends BaseHerokuBuildStepTest {
                 String logs = FileUtils.readFileToString(build.getLogFile());
 
                 assertTrue(logs.contains("Workspace contains"));
-                assertTrue(logs.contains("Push complete"));
+                assertTrue(logs.contains("Done, v"));
             }
         });
     }

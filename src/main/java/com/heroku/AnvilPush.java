@@ -251,7 +251,14 @@ public class AnvilPush extends AbstractHerokuBuildStep {
         }
 
         String resolveCommitHead() throws IOException, InterruptedException {
-            return Util.fixEmptyAndTrim(jenkinsEnv.expand("${GIT_COMMIT}"));
+            final String gitCommitEnvKey = "${GIT_COMMIT}";
+            final String gitCommit = jenkinsEnv.expand(gitCommitEnvKey);
+            if (gitCommitEnvKey.equals(gitCommit)) {
+                // this env does not have a GIT_COMMIT set, so server will assign time-based value
+                return null;
+            } else {
+                return gitCommit;
+            }
         }
 
         Config config() {
