@@ -2,7 +2,8 @@ package com.heroku;
 
 import com.heroku.api.App;
 import com.heroku.api.HerokuAPI;
-import com.heroku.api.Release;
+import com.heroku.janvil.Config;
+import com.heroku.janvil.EventSubscription;
 import com.heroku.janvil.Janvil;
 import hudson.Extension;
 import hudson.Launcher;
@@ -14,7 +15,10 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import java.io.IOException;
 import java.util.List;
 
-import static com.heroku.HerokuPlugin.Feature.ANVIL;
+import static com.heroku.HerokuPlugin.Feature.CISAURUS;
+import static com.heroku.janvil.Janvil.Event;
+import static com.heroku.janvil.Janvil.Event.POLLING;
+import static com.heroku.janvil.Janvil.Event.PROMOTE_END;
 
 /**
  * @author Ryan Brainard
@@ -22,13 +26,11 @@ import static com.heroku.HerokuPlugin.Feature.ANVIL;
 public class Promote extends AbstractHerokuBuildStep {
 
     private String sourceAppName;
-    private String envMask;
 
     @DataBoundConstructor
-    public Promote(String apiKey, String sourceAppName, String targetAppName, String envMask) {
+    public Promote(String apiKey, String sourceAppName, String targetAppName) {
         super(apiKey, targetAppName);
         this.sourceAppName = sourceAppName;
-        this.envMask = envMask;
     }
 
     // Overriding and delegating to parent because Jelly only looks at concrete class when rendering views
@@ -45,43 +47,38 @@ public class Promote extends AbstractHerokuBuildStep {
         return super.getAppName();
     }
 
-    public String getEnvMask() {
-        return envMask;
-    }
-
     @Override
-    protected boolean perform(AbstractBuild build, Launcher launcher, BuildListener listener, HerokuAPI api, final App targetApp) throws IOException, InterruptedException {
-        listener.getLogger().println("Promoting slug from " + sourceAppName + " to " + targetApp.getName() + " ...");
+    protected boolean perform(AbstractBuild build, Launcher launcher, final BuildListener listener, HerokuAPI api, final App targetApp) throws IOException, InterruptedException {
+        final Janvil janvil = new Janvil(new Config(getEffectiveApiKey()).
+            setEventSubscription(new EventSubscription<Janvil.Event>(Event.class)
+                .subscribe(PROMOTE_END, new EventSubscription.Subscriber<Janvil.Event>() {
+                    public void handle(Event event, Object version) {
+                        listener.getLogger().println("Done, " + version + " | " + targetApp.getWebUrl());
+                    }
+                })));
 
-        final Release releaseBefore = currentRelease(api, targetApp);
-        try {
-            new Janvil(getEffectiveApiKey()).copy(getSourceAppName(), getTargetAppName(), new Janvil.ReleaseDescriptionBuilder() {
-                public String buildDescription(String sourceAppName, String sourceReleaseName, String sourceCommit, String targetAppName) {
-                    return "Promote " + sourceAppName + " " + sourceReleaseName + (sourceCommit != null ? " " + sourceCommit : "");
-                }
-            });
-        } catch (Exception e) {
-            api.rollback(targetApp.getName(), releaseBefore.getName());
-            throw new RuntimeException(e);
+        final List<String> downstreams = janvil.downstreams(getSourceAppName());
+        if (downstreams.isEmpty()) {
+            listener.getLogger().println("Adding " + targetApp + " as downstream app...");
+            janvil.addDownstream(getSourceAppName(), getTargetAppName());
+        } else if (!downstreams.get(0).equals(getTargetAppName())) {
+            listener.error(getSourceAppName() + " already has " + downstreams.get(0) + " configured as its downstream app");
+            return false;
         }
 
-        listener.getLogger().println("Promotion complete, " + currentRelease(api, targetApp).getName() + " | " + targetApp.getWebUrl());
+        listener.getLogger().println("Promoting " + getSourceAppName() + " to " + targetApp.getName() + " ...");
+        janvil.promote(getSourceAppName());
 
         return true;
     }
 
-    private Release currentRelease(HerokuAPI api, App targetApp) {
-        final List<Release> releases = api.listReleases(targetApp.getName());
-        return releases.get(releases.size() - 1);
-    }
-
     @Override
-    public ReleaseDescriptor getDescriptor() {
-        return (ReleaseDescriptor) super.getDescriptor();
+    public PromoteDescriptor getDescriptor() {
+        return (PromoteDescriptor) super.getDescriptor();
     }
 
     @Extension
-    public static final class ReleaseDescriptor extends AbstractHerokuBuildStepDescriptor {
+    public static final class PromoteDescriptor extends AbstractHerokuBuildStepDescriptor {
 
         public String getDisplayName() {
             return "Heroku: Promote";
@@ -89,7 +86,7 @@ public class Promote extends AbstractHerokuBuildStep {
 
         @Override
         public boolean isApplicable(Class<? extends AbstractProject> jobType) {
-            return HerokuPlugin.get().hasFeature(ANVIL);
+            return HerokuPlugin.get().hasFeature(CISAURUS);
         }
     }
 }

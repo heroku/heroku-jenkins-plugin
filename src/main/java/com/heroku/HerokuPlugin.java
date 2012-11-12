@@ -77,11 +77,21 @@ public final class HerokuPlugin extends Plugin {
     }
 
     enum Feature {
-        ANVIL
+        ANVIL,
+        CISAURUS
     }
 
     boolean hasFeature(Feature feature) {
         final String features = System.getProperty("com.heroku.jenkins.features");
-        return features != null && features.contains(feature.name());
+        return features != null && features.toUpperCase().contains(feature.name().toUpperCase());
+    }
+
+    boolean hasFeatures(Feature... features) {
+        for (Feature feature : features) {
+            if (!hasFeature(feature)) {
+                return false;
+            }
+        }
+        return true;
     }
 }

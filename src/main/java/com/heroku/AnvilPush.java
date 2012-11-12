@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 import static com.heroku.HerokuPlugin.Feature.ANVIL;
+import static com.heroku.HerokuPlugin.Feature.CISAURUS;
 
 /*
  * @author Ryan Brainard
@@ -131,7 +132,7 @@ public class AnvilPush extends AbstractHerokuBuildStep {
 
         @Override
         public boolean isApplicable(Class<? extends AbstractProject> jobType) {
-            return HerokuPlugin.get().hasFeature(ANVIL);
+            return HerokuPlugin.get().hasFeatures(ANVIL, CISAURUS);
         }
 
         public FormValidation doCheckBuildpackUrl(@AncestorInPath AbstractProject project, @QueryParameter String value) throws IOException {
