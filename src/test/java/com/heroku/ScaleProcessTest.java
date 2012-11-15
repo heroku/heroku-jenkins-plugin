@@ -17,26 +17,23 @@ import java.util.Set;
 public class ScaleProcessTest extends BaseHerokuBuildStepTest {
 
     public void testPerform() throws Exception {
-        runWithNewApp(new AppRunnable() {
-            public void run(App app) throws Exception {
-                FreeStyleProject project = createFreeStyleProject();
+        final App app = new App().named(appName);
+        FreeStyleProject project = createFreeStyleProject();
 
-                final String processType = "web";
-                final int orgQty = getProcessesByType(app).get(processType).size();
-                final int scaleToZero = 0;
-                assertNotSame(orgQty, scaleToZero);
+        final String processType = "web";
+        final int orgQty = getProcessesByType(app).get(processType).size();
+        final int scaleToZero = 0;
+        assertNotSame(orgQty, scaleToZero);
 
-                try {
-                    project.getBuildersList().add(new ScaleProcess(apiKey, app.getName(), processType, scaleToZero));
-                    FreeStyleBuild build = project.scheduleBuild2(0).get();
-                    String logs = FileUtils.readFileToString(build.getLogFile());
+        try {
+            project.getBuildersList().add(new ScaleProcess(apiKey, app.getName(), processType, scaleToZero));
+            FreeStyleBuild build = project.scheduleBuild2(0).get();
+            String logs = FileUtils.readFileToString(build.getLogFile());
 
-                    assertNull(logs, getProcessesByType(app).get(processType));
-                } finally {
-                    api.scaleProcess(app.getName(), processType, orgQty);
-                }
-            }
-        });
+            assertNull(logs, getProcessesByType(app).get(processType));
+        } finally {
+            api.scaleProcess(app.getName(), processType, orgQty);
+        }
     }
 
     private Map<String, Set<Proc>> getProcessesByType(App app) {
