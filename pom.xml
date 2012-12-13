@@ -73,7 +73,7 @@
         <dependency>
             <groupId>com.heroku.janvil</groupId>
             <artifactId>janvil</artifactId>
-            <version>0.3-BETA-SNAPSHOT</version>
+            <version>0.4-BETA-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.mockito</groupId>
