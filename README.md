@@ -1,3 +1,5 @@
+This project is **DEPRECATED**!
+
 Heroku Jenkins Plugin
 ======================
 
