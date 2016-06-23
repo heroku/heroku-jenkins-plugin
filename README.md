@@ -1,5 +1,7 @@
 This project is **DEPRECATED**!
 
+The recommended alternative is the [Heroku Maven Plugin](https://devcenter.heroku.com/articles/deploying-java-applications-with-the-heroku-maven-plugin) or the [Heroku sbt Plugin](https://devcenter.heroku.com/articles/deploying-scala-and-play-applications-with-the-heroku-sbt-plugin) (depending on what build tool you are using).  The Heroku DevCenter has an article that describes [using the sbt plugin with Jenkins](https://devcenter.heroku.com/articles/deploy-scala-and-play-applications-to-heroku-from-jenkins-ci), but the approach for the Maven plugin is similar in principle.
+
 Heroku Jenkins Plugin
 ======================
 
